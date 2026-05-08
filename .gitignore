@@ -35,3 +35,6 @@ next-env.d.ts
 *.db
 *.db-journal
 *.sqlite
+
+# personal reference assets (PDFs, notes) — not part of the app
+/assets
