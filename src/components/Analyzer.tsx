@@ -17,6 +17,10 @@ import {
   ExternalLink,
   Clock,
   CheckCircle2,
+  Database,
+  Cpu,
+  Cloud,
+  HardDrive,
 } from "lucide-react";
 import { CHAINS, SUPPORTED_CHAIN_IDS, type ChainId } from "@/lib/chains";
 import type { AnalysisResult } from "@/lib/analyzer";
@@ -31,6 +35,15 @@ import {
 import { ActivityChart, CategoryPie } from "./Charts";
 import { MarkdownLite } from "./MarkdownLite";
 
+interface ProviderInfo {
+  id: string;
+  label: string;
+  model?: string;
+  isLocal?: boolean;
+  notes?: string[];
+  capabilities?: { nativeTxHistory: boolean; erc20TxHistory: boolean; nativeBalance: boolean };
+}
+
 interface ApiResponse {
   ok: boolean;
   cached?: boolean;
@@ -39,6 +52,7 @@ interface ApiResponse {
   aiSummary?: string;
   aiError?: string;
   error?: string;
+  providers?: { data: ProviderInfo; llm: ProviderInfo };
 }
 
 const SAMPLES: { label: string; chainId: ChainId; address: string }[] = [
@@ -219,6 +233,7 @@ function ResultPanel({ result, analysis }: { result: ApiResponse; analysis: Anal
   const chain = CHAINS[analysis.chainId as ChainId];
   return (
     <div className="space-y-6">
+      <ProviderBadge providers={result.providers} />
       <CacheBanner result={result} />
 
       <Header analysis={analysis} explorerUrl={chain.explorerUrl} />
@@ -257,6 +272,44 @@ function ResultPanel({ result, analysis }: { result: ApiResponse; analysis: Anal
       <Panel title="Recent Transactions" icon={<Clock className="w-4 h-4" />}>
         <TxTable analysis={analysis} explorerUrl={chain.explorerUrl} />
       </Panel>
+    </div>
+  );
+}
+
+function ProviderBadge({
+  providers,
+}: {
+  providers?: { data: ProviderInfo; llm: ProviderInfo };
+}) {
+  if (!providers) return null;
+  const { data, llm } = providers;
+  const dataIcon = data.id === "rpc" ? <HardDrive className="w-3.5 h-3.5" /> : <Cloud className="w-3.5 h-3.5" />;
+  const llmIcon = llm.isLocal ? <Cpu className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />;
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs">
+      <span
+        className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-white/10 bg-white/5"
+        title={data.notes?.join(" · ")}
+      >
+        <Database className="w-3.5 h-3.5 text-brand-500" />
+        <span className="text-white/50">Data</span>
+        {dataIcon}
+        <span className="text-white/90">{data.label}</span>
+      </span>
+      <span
+        className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-white/10 bg-white/5"
+        title={llm.notes?.join(" · ")}
+      >
+        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+        <span className="text-white/50">LLM</span>
+        {llmIcon}
+        <span className="text-white/90">{llm.label}</span>
+        {llm.model && (
+          <span className="mono text-[10px] text-white/50 bg-black/30 px-1.5 py-0.5 rounded">
+            {llm.model}
+          </span>
+        )}
+      </span>
     </div>
   );
 }
