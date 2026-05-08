@@ -1,0 +1,49 @@
+services:
+  # ChainNusa app — uses image from GHCR (or build locally)
+  app:
+    image: ghcr.io/faisalaffan/chainnusa:latest
+    # Uncomment to build locally instead of pulling:
+    # build: .
+    container_name: chainnusa
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      # Override host so the app can reach Ollama via the docker network
+      OLLAMA_BASE_URL: http://ollama:11434
+    volumes:
+      - chainnusa-data:/app/data
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - chainnusa-net
+
+  # Local LLM server (no API key needed)
+  # First run: docker compose exec ollama ollama pull qwen2.5:7b
+  ollama:
+    image: ollama/ollama:latest
+    container_name: chainnusa-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    networks:
+      - chainnusa-net
+
+volumes:
+  chainnusa-data:
+  ollama-models:
+
+networks:
+  chainnusa-net:
+    driver: bridge
