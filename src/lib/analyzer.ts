@@ -1,4 +1,4 @@
-import type { NormalTx, TokenTx } from "./etherscan";
+import type { NormalTx, TokenTx } from "./providers/data/types";
 import { getChain, type ChainId } from "./chains";
 
 /**

@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { isSupportedChain, type ChainId } from "@/lib/chains";
-import { getNativeBalance, getNormalTxs, getTokenTxs, EtherscanError } from "@/lib/etherscan";
 import { analyze, type AnalysisResult } from "@/lib/analyzer";
-import { generateSummary } from "@/lib/claude";
 import { readCache, writeCache, recordScan } from "@/lib/cache";
+import { getDataProvider } from "@/lib/providers/data/factory";
+import { EtherscanError } from "@/lib/providers/data/etherscan";
+import type { DataProviderInfo } from "@/lib/providers/data/types";
+import { getLlmProvider } from "@/lib/providers/llm/factory";
+import type { LlmProviderInfo } from "@/lib/providers/llm/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,6 +26,7 @@ interface AnalyzeApiResponse {
   analysis: AnalysisResult;
   aiSummary: string;
   aiError?: string;
+  providers: { data: DataProviderInfo; llm: LlmProviderInfo };
 }
 
 export async function POST(req: Request) {
@@ -52,13 +56,16 @@ export async function POST(req: Request) {
   }
 
   const typedChain = chainId as ChainId;
+  const dataProvider = getDataProvider();
+  const llmProvider = getLlmProvider();
+  const providers = { data: dataProvider.info, llm: llmProvider.info };
 
   // 1) Try cache
   if (!forceRefresh) {
     const cached = readCache(typedChain, address);
     if (cached && cached.fresh) {
       const ageSec = Math.floor((Date.now() - cached.cachedAt) / 1000);
-      const aiSummary = await safeAi(cached.payload);
+      const aiSummary = await safeAi(cached.payload, llmProvider.generateSummary.bind(llmProvider));
       const resp: AnalyzeApiResponse = {
         ok: true,
         cached: true,
@@ -66,6 +73,7 @@ export async function POST(req: Request) {
         analysis: cached.payload,
         aiSummary: aiSummary.text,
         aiError: aiSummary.error,
+        providers,
       };
       return NextResponse.json(resp);
     }
@@ -73,16 +81,15 @@ export async function POST(req: Request) {
 
   // 2) Fresh fetch
   try {
-    const [balance, normalTxs, tokenTxs] = await Promise.all([
-      getNativeBalance(typedChain, address),
-      getNormalTxs(typedChain, address, { offset: 500 }),
-      getTokenTxs(typedChain, address, { offset: 500 }),
-    ]);
+    const { nativeBalanceWei, normalTxs, tokenTxs } = await dataProvider.fetchAll(
+      typedChain,
+      address
+    );
 
     const analysis = analyze({
       chainId: typedChain,
       address,
-      nativeBalanceWei: balance,
+      nativeBalanceWei,
       normalTxs,
       tokenTxs,
     });
@@ -90,7 +97,7 @@ export async function POST(req: Request) {
     writeCache(typedChain, address, analysis);
     recordScan(typedChain, address, normalTxs.length, tokenTxs.length);
 
-    const aiSummary = await safeAi(analysis);
+    const aiSummary = await safeAi(analysis, llmProvider.generateSummary.bind(llmProvider));
 
     const resp: AnalyzeApiResponse = {
       ok: true,
@@ -98,6 +105,7 @@ export async function POST(req: Request) {
       analysis,
       aiSummary: aiSummary.text,
       aiError: aiSummary.error,
+      providers,
     };
     return NextResponse.json(resp);
   } catch (err) {
@@ -105,15 +113,18 @@ export async function POST(req: Request) {
       err instanceof EtherscanError
         ? err.message
         : err instanceof Error
-        ? err.message
-        : "Unknown error";
+          ? err.message
+          : "Unknown error";
     return NextResponse.json({ ok: false, error: message }, { status: 502 });
   }
 }
 
-async function safeAi(analysis: AnalysisResult): Promise<{ text: string; error?: string }> {
+async function safeAi(
+  analysis: AnalysisResult,
+  generate: (a: AnalysisResult) => Promise<string>
+): Promise<{ text: string; error?: string }> {
   try {
-    const text = await generateSummary(analysis);
+    const text = await generate(analysis);
     return { text };
   } catch (err) {
     const msg = err instanceof Error ? err.message : "AI summary failed";
