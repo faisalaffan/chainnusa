@@ -1,27 +1,27 @@
 # ChainNusa — Crypto Wallet Analyzer
 
-> On-chain intelligence platform for Southeast Asia.
-> Multi-chain wallet analyzer with AI summary. Powered by **Etherscan V2 + Claude (Anthropic)**.
+> On-chain intelligence platform untuk Asia Tenggara.
+> Multi-chain wallet analyzer dengan AI summary. Powered by **Etherscan V2 + Claude (Anthropic)**.
 
-Input: `wallet address` + `chain` → Output: spending pattern analysis + AI summary in natural language.
+Input: `wallet address` + `chain` → Output: analisis pola spending + ringkasan AI natural language (Bahasa Indonesia).
 
-> [Versi Bahasa Indonesia](README_ID.md)
+> [English version](README.md)
 
 ---
 
-## Features
+## Fitur
 
-- **Pluggable providers (adapter pattern)** — swap data source & LLM via env, no code changes:
+- **Pluggable providers (adapter pattern)** — swap data source & LLM via env, tanpa ubah kode:
   - Data: **Etherscan V2** (hosted, full history) ↔ **Direct JSON-RPC** (self-hosted via viem, ERC-20 only)
-  - LLM: **Claude** (hosted, via LangChain) ↔ **Ollama** (local, via LangChain)
-- **Multi-chain** — Ethereum, BSC, Polygon (via Etherscan V2 multichain or viem chains).
-- **Data pipeline**:
-  - Fetch native balance + last 500 tx + last 500 ERC-20 transfers (parallel).
-  - Heuristic categorization: transfer / contract / DEX swap (methodId) / failed / self.
+  - LLM: **Claude** (hosted, via LangChain) ↔ **Ollama** (lokal, via LangChain)
+- **Multi-chain** — Ethereum, BSC, Polygon (via Etherscan V2 multichain atau viem chains).
+- **Pipeline data**:
+  - Fetch native balance + last 500 tx + last 500 ERC-20 transfers (paralel).
+  - Heuristic categorization: transfer/contract/DEX swap (methodId)/failed/self.
   - Aggregation: total in/out, gas spent, top counterparties, token summary, daily activity.
-- **LLM orchestration via LangChain** (`ChatPromptTemplate` + `RunnableSequence` + `StringOutputParser`) — anti-hallucination system prompt, structured output.
-- **SQLite caching** — previously scanned wallets served from cache (TTL 1 hour, configurable). Force-refresh button in UI.
-- **UI** — Next.js 14 + Tailwind + Recharts + Lucide. Dark theme, responsive, real-time provider badge.
+- **LLM orchestration via LangChain** (`ChatPromptTemplate` + `RunnableSequence` + `StringOutputParser`) — system prompt anti-hallucination, output Bahasa Indonesia terstruktur.
+- **Caching SQLite** — wallet yang sudah pernah di-scan dilayani dari cache (TTL 1 jam, configurable). Force-refresh button di UI.
+- **UI** — Next.js 14 + Tailwind + Recharts + Lucide. Dark theme, responsive, badge provider info real-time.
 
 ---
 
@@ -37,21 +37,21 @@ Frontend      → Next.js 14 App Router + Tailwind + Recharts
 
 ### Provider matrix
 
-| Mode                  | Data         | LLM    | API key needed        | Privacy              |
+| Mode                  | Data         | LLM    | API key needed        | Privasi              |
 | --------------------- | ------------ | ------ | --------------------- | -------------------- |
-| **Hosted** (default)  | Etherscan V2 | Claude | Etherscan + Anthropic | Third-party data     |
-| **Hybrid A**          | Etherscan V2 | Ollama | Etherscan only        | Local LLM            |
+| **Hosted** (default)  | Etherscan V2 | Claude | Etherscan + Anthropic | Data ke pihak ke-3   |
+| **Hybrid A**          | Etherscan V2 | Ollama | Etherscan only        | LLM lokal            |
 | **Hybrid B**          | RPC          | Claude | Anthropic only        | Data via RPC         |
-| **Fully self-hosted** | RPC          | Ollama | _none_                | 100% local           |
+| **Fully self-hosted** | RPC          | Ollama | _none_                | 100% lokal           |
 
 ---
 
 ## Setup
 
-### 1. Prerequisites
+### 1. Prasyarat
 
-- Node.js 18.18+ or 20+, pnpm 10+
-- API keys based on mode (see table above) — can be _none_ for RPC + Ollama.
+- Node.js 18.18+ atau 20+, pnpm 10+
+- API key sesuai mode (lihat tabel di atas) — bisa _none_ kalau pakai RPC + Ollama.
 
 ### 2. Install
 
@@ -59,15 +59,15 @@ Frontend      → Next.js 14 App Router + Tailwind + Recharts
 pnpm install
 ```
 
-`better-sqlite3` is a native module — requires build tools (Xcode CLT on macOS, build-essential on Linux). pnpm auto-builds via `onlyBuiltDependencies`.
+`better-sqlite3` adalah native module — butuh build tools (Xcode CLT di macOS, build-essential di Linux). pnpm auto-build via `onlyBuiltDependencies`.
 
-### 3. Configure env
+### 3. Konfigurasi env
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`. Choose combination per the matrix:
+Edit `.env`. Pilih kombinasi sesuai matrix:
 
 ```ini
 # Default (hosted)
@@ -76,20 +76,20 @@ LLM_PROVIDER=claude
 ETHERSCAN_API_KEY=...
 ANTHROPIC_API_KEY=...
 
-# or Fully self-hosted
+# atau Fully self-hosted
 DATA_PROVIDER=rpc
 LLM_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=qwen2.5:7b
 ```
 
-### 4. Run
+### 4. Jalankan
 
 ```bash
 pnpm dev
 ```
 
-Open http://localhost:3000 — the badge in the analysis result shows the active provider.
+Buka http://localhost:3000 — badge di hasil analisis akan menunjukkan provider aktif.
 
 ### 5. Production build
 
@@ -99,42 +99,42 @@ pnpm build && pnpm start
 
 ---
 
-## Self-Hosted Mode (Ollama + RPC)
+## Mode Self-Hosted (Ollama + RPC)
 
-### Option A: Docker Compose (recommended)
+### Opsi A: Docker Compose (recommended)
 
 ```bash
 cp .env.example .env
-# set DATA_PROVIDER=rpc and LLM_PROVIDER=ollama in .env
+# set DATA_PROVIDER=rpc dan LLM_PROVIDER=ollama di .env
 docker compose up -d
 
-# Pull model in the ollama container:
+# Pull model di container ollama:
 docker compose exec ollama ollama pull qwen2.5:7b
 ```
 
-App at `http://localhost:3000`, Ollama at `http://localhost:11434`. Data persisted in `chainnusa-data` & `ollama-models` volumes.
+App di `http://localhost:3000`, Ollama di `http://localhost:11434`. Data persistent di volume `chainnusa-data` & `ollama-models`.
 
-### Option B: Native Ollama install
+### Opsi B: Native install Ollama
 
 ```bash
 # macOS / Linux:
 curl -fsSL https://ollama.com/install.sh | sh
 ollama serve &
-ollama pull qwen2.5:7b   # or llama3.1:8b, mistral, etc.
+ollama pull qwen2.5:7b   # atau llama3.1:8b, mistral, dll
 
-# in this repo:
+# di repo ini:
 # .env -> LLM_PROVIDER=ollama, DATA_PROVIDER=rpc
 pnpm dev
 ```
 
-### Recommended local models
+### Rekomendasi model lokal
 
-| Model         | Size   | Strengths       | Indonesian        |
-| ------------- | ------ | --------------- | ----------------- |
-| `qwen2.5:7b`  | ~4.7GB | Fast, balanced  | Good              |
-| `llama3.1:8b` | ~4.9GB | Strong reasoning | Decent            |
-| `mistral:7b`  | ~4.1GB | Concise         | Adequate          |
-| `qwen2.5:14b` | ~9GB   | More accurate   | Very good         |
+| Model         | Size   | Kekuatan       | Bahasa Indonesia |
+| ------------- | ------ | -------------- | ---------------- |
+| `qwen2.5:7b`  | ~4.7GB | Fast, balanced | Bagus            |
+| `llama3.1:8b` | ~4.9GB | Reasoning kuat | Decent           |
+| `mistral:7b`  | ~4.1GB | Concise        | Cukup            |
+| `qwen2.5:14b` | ~9GB   | Lebih akurat   | Sangat bagus     |
 
 ---
 
@@ -195,7 +195,7 @@ Response (200):
     ],
     "sampleTxs": []
   },
-  "aiSummary": "## Summary\n- ..."
+  "aiSummary": "## Ringkasan\n- ..."
 }
 ```
 
@@ -207,7 +207,7 @@ Error (4xx/5xx):
 
 ---
 
-## Project Structure
+## Struktur Proyek
 
 ```
 apps/web/                           # Next.js 14 App Router
@@ -254,30 +254,30 @@ infra/                               # Docker Compose
 
 ---
 
-## Limitations
+## Limitasi
 
-### `etherscan` mode
+### Mode `etherscan`
 
-- Only pulls the **last 500 txs** and **last 500 token transfers** per scan to conserve free-tier rate limits (5 req/s).
-- DEX swap categorization is based on **known router methodIds** (Uniswap V2/V3 + multicall). Other DEXs may be classified as _contract_interaction_.
+- Hanya menarik **last 500 tx** dan **last 500 token transfer** per scan untuk hemat rate-limit free tier (5 req/s).
+- Kategorisasi DEX swap berbasis **methodId router yang dikenal** (Uniswap V2/V3 + multicall). DEX lain bisa terklasifikasi sebagai _contract_interaction_.
 
-### `rpc` mode
+### Mode `rpc`
 
-- **No native tx history** — JSON-RPC has no "txlist by address" endpoint. Only ERC-20 Transfer events via `eth_getLogs` (indexed by topic).
-- Block range limited to the last `RPC_LOG_BLOCK_RANGE` blocks (default 10k ≈ ~1.5 hours on ETH).
-- Public RPCs may rate-limit; provider auto-falls back to the next endpoint.
+- **Tidak ada native tx history** — JSON-RPC tidak punya endpoint "txlist by address". Hanya ERC-20 Transfer events via `eth_getLogs` (indexed by topic).
+- Block range terbatas ke `RPC_LOG_BLOCK_RANGE` blok terakhir (default 10k ≈ ~1.5 jam di ETH).
+- Public RPC bisa rate-limit; provider auto-fallback ke endpoint berikutnya.
 
-### `ollama` mode
+### Mode `ollama`
 
-- Latency depends on local hardware. `qwen2.5:7b` on M-series Mac ~5-15 seconds per request.
-- Output quality varies by model size — try `qwen2.5:14b` for higher quality.
+- Latency tergantung hardware lokal. `qwen2.5:7b` di M-series Mac ~5-15 detik per request.
+- Output Bahasa Indonesia kadang kurang konsisten dibanding Claude untuk model kecil — coba `qwen2.5:14b` jika butuh kualitas lebih.
 
-### General
+### Umum
 
-- AI summary is **heuristic**. Not financial advice.
+- AI summary bersifat **heuristik**. Bukan financial advice.
 
 ---
 
-## License
+## Lisensi
 
-MIT — see `LICENSE`.
+MIT — lihat `LICENSE`.
