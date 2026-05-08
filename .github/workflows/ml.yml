@@ -1,0 +1,68 @@
+name: ML CI
+
+on:
+  push:
+    branches: [main, master, dev]
+    paths:
+      - "ml-service/**"
+  pull_request:
+    branches: [main, master, dev]
+    paths:
+      - "ml-service/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality (lint + test + smoke train)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ml-service
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('ml-service/pyproject.toml') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check app/ tests/
+
+      - name: Type check (mypy)
+        run: mypy app/ --ignore-missing-imports
+
+      - name: Run tests
+        run: pytest -q --cov=app --cov-report=term-missing
+
+      - name: Smoke train (5 epochs)
+        run: |
+          python -c "
+          import numpy as np, pandas as pd
+          from app.features.extractor import WalletFeatureExtractor, NormalTxData
+          from app.models.wallet_clf import WalletClassifier
+          np.random.seed(42)
+          n = 100
+          X = pd.DataFrame(np.random.randn(n, 15), columns=[f'f_{i}' for i in range(15)])
+          y = pd.Series(np.random.choice(['exchange','dex_trader','normal'], n))
+          clf = WalletClassifier(model_type='rf')
+          metrics = clf.train(X, y)
+          print(f'Smoke train F1: {metrics[\"f1_macro\"]:.3f}')
+          assert metrics['f1_macro'] > 0.1, 'Model too weak'
+          print('Smoke train OK')
+          "

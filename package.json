@@ -11,10 +11,15 @@
     "web:lint": "pnpm --filter @chainnusa/web lint",
     "ml:dev": "cd ml-service && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
     "ml:test": "cd ml-service && pytest -q",
+    "ml:lint": "cd ml-service && ruff check app/ tests/",
+    "ml:typecheck": "cd ml-service && mypy app/ --ignore-missing-imports",
+    "notebooks": "cd ml-service && jupyter notebook notebooks/",
     "contracts:test": "cd contracts && forge test -vv",
     "contracts:build": "cd contracts && forge build",
+    "contracts:slither": "cd contracts && slither . --fail-high",
     "infra:up": "cd infra && docker compose up -d",
-    "infra:down": "cd infra && docker compose down"
+    "infra:down": "cd infra && docker compose down",
+    "infra:full": "docker compose -f docker-compose.yml -f infra/docker-compose.yml up -d"
   },
   "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8",
   "engines": {

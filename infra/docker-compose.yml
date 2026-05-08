@@ -1,0 +1,115 @@
+services:
+  # ── PostgreSQL 16 ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: chainnusa-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: chainnusa
+      POSTGRES_PASSWORD: chainnusa
+      POSTGRES_DB: chainnusa
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "chainnusa"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - chainnusa-net
+
+  # ── MinIO (S3-compatible) ──
+  minio:
+    image: minio/minio:latest
+    container_name: chainnusa-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - chainnusa-net
+
+  # ── MLflow Tracking Server ──
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.16.0
+    container_name: chainnusa-mlflow
+    restart: unless-stopped
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri postgresql://chainnusa:chainnusa@postgres:5432/chainnusa
+      --default-artifact-root s3://chainnusa-models
+    environment:
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      MLFLOW_S3_IGNORE_TLS: "true"
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - chainnusa-net
+
+  # ── Prometheus ──
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: chainnusa-prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - chainnusa-net
+
+  # ── Grafana ──
+  grafana:
+    image: grafana/grafana:latest
+    container_name: chainnusa-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: ""
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - chainnusa-net
+
+volumes:
+  postgres-data:
+  minio-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  chainnusa-net:
+    driver: bridge
