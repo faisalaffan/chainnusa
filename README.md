@@ -39,7 +39,7 @@ Frontend      → Next.js 14 App Router + Tailwind + Recharts
 | --------------------- | ------------ | ------ | --------------------- | -------------------- |
 | **Hosted** (default)  | Etherscan V2 | Claude | Etherscan + Anthropic | Data ke pihak ke-3   |
 | **Hybrid A**          | Etherscan V2 | Ollama | Etherscan only        | LLM lokal            |
-| **Hybrid B**          | RPC          | Claude | Anthropic only        | Data fetch lokal-ish |
+| **Hybrid B**          | RPC          | Claude | Anthropic only        | Data via RPC          |
 | **Fully self-hosted** | RPC          | Ollama | _none_                | 100% lokal           |
 
 ---
@@ -57,7 +57,7 @@ Frontend      → Next.js 14 App Router + Tailwind + Recharts
 pnpm install
 ```
 
-> Catatan: `better-sqlite3` adalah native module, butuh build tools (Xcode CLT di macOS, build-essential di Linux). pnpm sudah di-config untuk auto-build.
+`better-sqlite3` adalah native module — butuh build tools (Xcode CLT di macOS, build-essential di Linux). pnpm auto-build via `onlyBuiltDependencies`.
 
 ### 3. Konfigurasi env
 
@@ -208,51 +208,51 @@ Error (4xx/5xx):
 ## 🏗️ Struktur Proyek
 
 ```
-src/
+apps/web/                           # Next.js 14 App Router
+├── src/
+│   ├── app/api/analyze/route.ts     # POST endpoint, factory-driven
+│   ├── app/api/auth/                # SIWE sign-in (nonce + verify)
+│   ├── components/                  # Analyzer, Charts, MarkdownLite
+│   └── lib/
+│       ├── analyzer.ts              # Aggregation + categorization heuristic
+│       ├── chains.ts                # Chain registry (ETH, BSC, Polygon)
+│       ├── db.ts                    # SQLite + schema
+│       ├── cache.ts                 # Cache & scan history
+│       ├── ml-client.ts             # ML service client
+│       ├── siwe.ts                  # EIP-4361 auth helpers
+│       ├── contracts/               # ABI + write helpers
+│       └── providers/               # Adapter pattern: data + llm
+├── Dockerfile
+└── package.json
+
+ml-service/                          # Python FastAPI
 ├── app/
-│   ├── layout.tsx
-│   ├── page.tsx                       # 1 halaman UI
-│   ├── globals.css
-│   └── api/analyze/route.ts           # POST endpoint, factory-driven
-├── components/
-│   ├── Analyzer.tsx                   # main client component
-│   ├── Charts.tsx                     # recharts wrappers
-│   └── MarkdownLite.tsx               # tiny MD renderer untuk AI output
-└── lib/
-    ├── chains.ts                      # chain registry
-    ├── analyzer.ts                    # aggregation + categorization heuristic
-    ├── db.ts                          # SQLite + schema
-    ├── cache.ts                       # cache & scan history
-    ├── format.ts                      # display helpers
-    └── providers/
-        ├── data/
-        │   ├── types.ts               # DataProvider interface + shared tx types
-        │   ├── etherscan.ts           # EtherscanProvider (V2 multichain REST)
-        │   ├── rpc.ts                 # RpcProvider (viem + eth_getLogs)
-        │   └── factory.ts             # selectDataProvider() via env
-        └── llm/
-            ├── types.ts               # LlmProvider interface
-            ├── prompt.ts              # shared system prompt + payload builder
-            ├── claude.ts              # ClaudeProvider via LangChain ChatAnthropic
-            ├── ollama.ts              # OllamaProvider via LangChain ChatOllama
-            └── factory.ts             # selectLlmProvider() via env
+│   ├── main.py                      # API entry point
+│   ├── routers/                     # /predict, /explain, /cluster
+│   ├── models/                      # RF/XGBoost, IsolationForest, LSTM
+│   ├── features/extractor.py        # 30+ wallet features
+│   └── etl/                         # Extract → Transform → Load
+├── notebooks/                       # 8 Jupyter notebooks
+├── tests/
+├── Dockerfile
+└── pyproject.toml
+
+contracts/                           # Solidity (Foundry)
+├── src/AnalysisRegistry.sol         # On-chain CID registry
+├── src/ReportSBT.sol                # Soulbound NFT
+├── test/
+├── script/Deploy.s.sol
+└── foundry.toml
+
+infra/                               # Docker Compose
+├── docker-compose.yml               # PostgreSQL 16, MinIO, MLflow, Prometheus, Grafana
+├── prometheus/prometheus.yml
+└── grafana/
 ```
 
 ---
 
-## 🎯 Mapping Domain (untuk portfolio narrative)
-
-| Domain          | Bukti                                                                                  |
-| --------------- | -------------------------------------------------------------------------------------- |
-| Web3/Blockchain | viem + JSON-RPC, eth_getLogs Transfer events, multicall ERC-20 metadata, methodId DEX  |
-| Data Engineer   | Fetch → normalize → aggregate → cache pipeline + multi-source adapter pattern          |
-| AI Engineer     | LangChain orchestration (RunnableSequence), local + hosted LLM, anti-halusinasi prompt |
-| Backend         | REST endpoint validated, factory pattern, error handling, parallel fetch, fallback RPC |
-| DevOps          | Multi-stage Dockerfile, multi-arch GHCR via GitHub Actions, docker-compose for Ollama  |
-
----
-
-## ⚠️ Limitasi yang Diketahui
+## ⚠️ Limitasi
 
 ### Mode `etherscan`
 
@@ -273,16 +273,6 @@ src/
 ### Umum
 
 - AI summary bersifat **heuristik**. Bukan financial advice.
-
----
-
-## 🛣️ Roadmap
-
-- [ ] Fetch internal tx (untuk akurasi gas & smart contract interaction)
-- [ ] Label kontrak terkenal (Uniswap, Aave, dll) via Etherscan tag API
-- [ ] Export PDF/CSV
-- [ ] Multi-wallet comparison
-- [ ] Streaming AI response (SSE)
 
 ---
 
