@@ -9,26 +9,38 @@ Input: `wallet address` + `chain` → Output: spending pattern analysis + AI sum
 
 ## ✨ Fitur
 
-- **Multi-chain (50+ via Etherscan V2)** — saat ini diaktifkan: Ethereum, BNB Smart Chain, Polygon. 1 API key untuk semua chain.
-- **Pipeline data lengkap**:
-  - Fetch native balance + last 500 normal tx + last 500 ERC-20 transfers (paralel).
-  - Heuristic categorization: native transfer in/out, contract interaction, DEX swap (via methodId), token transfer, failed, self.
-  - Aggregation: total in/out, gas spent, top counterparties, token-level summary, daily activity.
-- **AI Layer (Claude)** — summary terstruktur (Ringkasan, Pola Aktivitas, Token & Counterparty, Indikator Perilaku) dengan instruksi anti-halusinasi.
-- **Caching SQLite** — wallet yang sudah pernah di-scan dilayani dari cache (TTL 1 jam, configurable). Tombol _force refresh_ di UI.
-- **UI modern** — Next.js 14 (App Router) + Tailwind + Recharts + Lucide. Dark theme, responsive.
+- **Pluggable providers (adapter pattern)** — swap data source & LLM via env, tanpa ubah kode:
+  - Data: **Etherscan V2** (hosted, full history) ↔ **Direct JSON-RPC** (self-hosted via viem, ERC-20 only)
+  - LLM: **Claude** (hosted, via LangChain) ↔ **Ollama** (lokal, via LangChain)
+- **Multi-chain** — Ethereum, BSC, Polygon (via Etherscan V2 multichain atau viem chains).
+- **Pipeline data**:
+  - Fetch native balance + last 500 tx + last 500 ERC-20 transfers (paralel).
+  - Heuristic categorization: transfer/contract/DEX swap (methodId)/failed/self.
+  - Aggregation: total in/out, gas spent, top counterparties, token summary, daily activity.
+- **LLM orchestration via LangChain** (`ChatPromptTemplate` + `RunnableSequence` + `StringOutputParser`) — system prompt anti-hallucination, output Bahasa Indonesia terstruktur.
+- **Caching SQLite** — wallet yang sudah pernah di-scan dilayani dari cache (TTL 1 jam, configurable). Force-refresh button di UI.
+- **UI** — Next.js 14 + Tailwind + Recharts + Lucide. Dark theme, responsive, badge provider info real-time.
 
 ---
 
 ## 🧱 Stack
 
 ```
-Data Source   → Etherscan V2 multichain API (free, single key)
+Data Source   → Etherscan V2 API  ↔  Direct JSON-RPC (viem + public RPC)
 Storage       → SQLite (better-sqlite3) — file-based, zero infra
-AI Layer      → Claude (Anthropic SDK)
+LLM Layer     → LangChain (ChatAnthropic ↔ ChatOllama)
 Backend       → Next.js Route Handlers (Node runtime)
 Frontend      → Next.js 14 App Router + Tailwind + Recharts
 ```
+
+### Provider matrix
+
+| Mode                  | Data         | LLM    | API key needed        | Privasi              |
+| --------------------- | ------------ | ------ | --------------------- | -------------------- |
+| **Hosted** (default)  | Etherscan V2 | Claude | Etherscan + Anthropic | Data ke pihak ke-3   |
+| **Hybrid A**          | Etherscan V2 | Ollama | Etherscan only        | LLM lokal            |
+| **Hybrid B**          | RPC          | Claude | Anthropic only        | Data fetch lokal-ish |
+| **Fully self-hosted** | RPC          | Ollama | _none_                | 100% lokal           |
 
 ---
 
@@ -36,18 +48,16 @@ Frontend      → Next.js 14 App Router + Tailwind + Recharts
 
 ### 1. Prasyarat
 
-- Node.js 18.18+ atau 20+
-- 2 API key:
-  - **Etherscan API key** — https://etherscan.io/myapikey (gratis, support multichain V2)
-  - **Anthropic API key** — https://console.anthropic.com/
+- Node.js 18.18+ atau 20+, pnpm 10+
+- API key sesuai mode (lihat tabel di atas) — bisa _none_ kalau pakai RPC + Ollama.
 
 ### 2. Install
 
 ```bash
-npm install
+pnpm install
 ```
 
-> Catatan: `better-sqlite3` adalah native module, butuh build tools (Xcode CLT di macOS, build-essential di Linux).
+> Catatan: `better-sqlite3` adalah native module, butuh build tools (Xcode CLT di macOS, build-essential di Linux). pnpm sudah di-config untuk auto-build.
 
 ### 3. Konfigurasi env
 
@@ -55,30 +65,74 @@ npm install
 cp .env.example .env
 ```
 
-Isi `.env`:
+Edit `.env`. Pilih kombinasi sesuai matrix:
 
-```
+```ini
+# Default (hosted)
+DATA_PROVIDER=etherscan
+LLM_PROVIDER=claude
 ETHERSCAN_API_KEY=...
 ANTHROPIC_API_KEY=...
-CLAUDE_MODEL=claude-3-5-sonnet-latest   # opsional
-SQLITE_PATH=./data/chainnusa.db          # opsional
-CACHE_TTL_SECONDS=3600                   # opsional, 1 jam
+
+# atau Fully self-hosted
+DATA_PROVIDER=rpc
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=qwen2.5:7b
 ```
 
 ### 4. Jalankan
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
-Buka http://localhost:3000
+Buka http://localhost:3000 — badge di hasil analisis akan menunjukkan provider aktif.
 
 ### 5. Production build
 
 ```bash
-npm run build
-npm start
+pnpm build && pnpm start
 ```
+
+---
+
+## 🦙 Mode Self-Hosted (Ollama + RPC)
+
+### Opsi A: Docker Compose (recommended, sekali setup)
+
+```bash
+cp .env.example .env
+# set DATA_PROVIDER=rpc dan LLM_PROVIDER=ollama di .env
+docker compose up -d
+
+# Pull model di container ollama:
+docker compose exec ollama ollama pull qwen2.5:7b
+```
+
+App di `http://localhost:3000`, Ollama di `http://localhost:11434`. Data persistent di volume `chainnusa-data` & `ollama-models`.
+
+### Opsi B: Native install Ollama
+
+```bash
+# macOS / Linux:
+curl -fsSL https://ollama.com/install.sh | sh
+ollama serve &
+ollama pull qwen2.5:7b   # atau llama3.1:8b, mistral, dll
+
+# di repo ini:
+# .env -> LLM_PROVIDER=ollama, DATA_PROVIDER=rpc
+pnpm dev
+```
+
+### Rekomendasi model lokal
+
+| Model         | Size   | Kekuatan       | Bahasa Indonesia |
+| ------------- | ------ | -------------- | ---------------- |
+| `qwen2.5:7b`  | ~4.7GB | Fast, balanced | ✅ Bagus         |
+| `llama3.1:8b` | ~4.9GB | Reasoning kuat | ✅ Decent        |
+| `mistral:7b`  | ~4.1GB | Concise        | ⚠️ Cukup         |
+| `qwen2.5:14b` | ~9GB   | Lebih akurat   | ✅ Sangat bagus  |
 
 ---
 
@@ -157,41 +211,67 @@ Error (4xx/5xx):
 src/
 ├── app/
 │   ├── layout.tsx
-│   ├── page.tsx                  # 1 halaman UI
+│   ├── page.tsx                       # 1 halaman UI
 │   ├── globals.css
-│   └── api/analyze/route.ts      # POST endpoint
+│   └── api/analyze/route.ts           # POST endpoint, factory-driven
 ├── components/
-│   ├── Analyzer.tsx              # main client component (form + results)
-│   ├── Charts.tsx                # recharts wrappers
-│   └── MarkdownLite.tsx          # tiny MD renderer untuk AI output
+│   ├── Analyzer.tsx                   # main client component
+│   ├── Charts.tsx                     # recharts wrappers
+│   └── MarkdownLite.tsx               # tiny MD renderer untuk AI output
 └── lib/
-    ├── chains.ts                 # chain registry
-    ├── etherscan.ts              # V2 multichain API client
-    ├── analyzer.ts               # aggregation + categorization heuristic
-    ├── claude.ts                 # Anthropic SDK wrapper + system prompt
-    ├── db.ts                     # SQLite + schema
-    ├── cache.ts                  # cache & scan history
-    └── format.ts                 # display helpers
+    ├── chains.ts                      # chain registry
+    ├── analyzer.ts                    # aggregation + categorization heuristic
+    ├── db.ts                          # SQLite + schema
+    ├── cache.ts                       # cache & scan history
+    ├── format.ts                      # display helpers
+    └── providers/
+        ├── data/
+        │   ├── types.ts               # DataProvider interface + shared tx types
+        │   ├── etherscan.ts           # EtherscanProvider (V2 multichain REST)
+        │   ├── rpc.ts                 # RpcProvider (viem + eth_getLogs)
+        │   └── factory.ts             # selectDataProvider() via env
+        └── llm/
+            ├── types.ts               # LlmProvider interface
+            ├── prompt.ts              # shared system prompt + payload builder
+            ├── claude.ts              # ClaudeProvider via LangChain ChatAnthropic
+            ├── ollama.ts              # OllamaProvider via LangChain ChatOllama
+            └── factory.ts             # selectLlmProvider() via env
 ```
 
 ---
 
 ## 🎯 Mapping Domain (untuk portfolio narrative)
 
-| Domain          | Bukti                                                                |
-| --------------- | -------------------------------------------------------------------- |
-| Web3/Blockchain | Decode tx (methodId DEX router), ERC-20 token transfer parsing       |
-| Data Engineer   | Fetch → normalize → aggregate → store pipeline + caching layer       |
-| AI Engineer     | LLM summarization dengan structured prompt + anti-halusinasi rules   |
-| Backend         | REST endpoint validated, error handling, paralel fetch, multi-tenant |
+| Domain          | Bukti                                                                                  |
+| --------------- | -------------------------------------------------------------------------------------- |
+| Web3/Blockchain | viem + JSON-RPC, eth_getLogs Transfer events, multicall ERC-20 metadata, methodId DEX  |
+| Data Engineer   | Fetch → normalize → aggregate → cache pipeline + multi-source adapter pattern          |
+| AI Engineer     | LangChain orchestration (RunnableSequence), local + hosted LLM, anti-halusinasi prompt |
+| Backend         | REST endpoint validated, factory pattern, error handling, parallel fetch, fallback RPC |
+| DevOps          | Multi-stage Dockerfile, multi-arch GHCR via GitHub Actions, docker-compose for Ollama  |
 
 ---
 
 ## ⚠️ Limitasi yang Diketahui
 
-- Hanya menarik **last 500 tx** dan **last 500 token transfer** per scan untuk hemat rate-limit Etherscan free tier (5 req/s). Untuk wallet super aktif, sample mungkin tidak lengkap.
+### Mode `etherscan`
+
+- Hanya menarik **last 500 tx** dan **last 500 token transfer** per scan untuk hemat rate-limit free tier (5 req/s).
 - Kategorisasi DEX swap berbasis **methodId router yang dikenal** (Uniswap V2/V3 + multicall). DEX lain bisa terklasifikasi sebagai _contract_interaction_.
-- Native balance saja yang ditampilkan; saldo per ERC-20 token tidak di-fetch on-chain (hanya agregasi flow dari tx history).
+
+### Mode `rpc`
+
+- **Tidak ada native tx history** — JSON-RPC tidak punya endpoint "txlist by address". Hanya ERC-20 Transfer events via `eth_getLogs` (indexed by topic). Kategori transfer/contract akan menampilkan 0 untuk native.
+- Block range terbatas ke `RPC_LOG_BLOCK_RANGE` blok terakhir (default 10k ≈ ~1.5 jam di ETH; sesuaikan untuk wallet inaktif).
+- Public RPC bisa rate-limit; provider auto-fallback ke endpoint berikutnya.
+
+### Mode `ollama`
+
+- Latency tergantung hardware lokal. `qwen2.5:7b` di M-series Mac ~5-15 detik per request.
+- Output Bahasa Indonesia kadang kurang konsisten dibanding Claude untuk model kecil — coba `qwen2.5:14b` jika butuh kualitas lebih.
+
+### Umum
+
 - AI summary bersifat **heuristik**. Bukan financial advice.
 
 ---
