@@ -1,45 +1,29 @@
 {
   "name": "chainnusa",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Crypto Wallet Analyzer — multi-chain spending pattern analysis + AI summary",
+  "description": "ChainNusa monorepo — on-chain wallet intelligence platform (Web3 + ML + Smart Contract)",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "web:dev": "pnpm --filter @chainnusa/web dev",
+    "web:build": "pnpm --filter @chainnusa/web build",
+    "web:start": "pnpm --filter @chainnusa/web start",
+    "web:typecheck": "pnpm --filter @chainnusa/web typecheck",
+    "web:lint": "pnpm --filter @chainnusa/web lint",
+    "ml:dev": "cd ml-service && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "ml:test": "cd ml-service && pytest -q",
+    "contracts:test": "cd contracts && forge test -vv",
+    "contracts:build": "cd contracts && forge build",
+    "infra:up": "cd infra && docker compose up -d",
+    "infra:down": "cd infra && docker compose down"
   },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.27.3",
-    "@langchain/anthropic": "^1.3.29",
-    "@langchain/core": "^1.1.45",
-    "@langchain/ollama": "^1.2.7",
-    "better-sqlite3": "^11.3.0",
-    "langchain": "^1.4.0",
-    "lucide-react": "^0.445.0",
-    "next": "14.2.15",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "recharts": "^2.12.7",
-    "viem": "^2.48.11"
-  },
-  "devDependencies": {
-    "@types/better-sqlite3": "^7.6.11",
-    "@types/node": "^20.16.10",
-    "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.0",
-    "autoprefixer": "^10.4.20",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "14.2.15",
-    "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.13",
-    "typescript": "^5.6.2"
+  "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8",
+  "engines": {
+    "node": ">=20"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "better-sqlite3"
+      "better-sqlite3",
+      "unrs-resolver"
     ]
-  },
-  "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8"
+  }
 }

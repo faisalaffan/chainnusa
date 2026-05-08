@@ -38,3 +38,7 @@ next-env.d.ts
 
 # personal reference assets (PDFs, notes) — not part of the app
 /assets
+**node_modules**
+
+**.next**
+
