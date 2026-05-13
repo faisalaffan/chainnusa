@@ -1,11 +1,23 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/01_BANNER_DARK.png">
+  <source media="(prefers-color-scheme: light)" srcset="assets/02_BANNER_LIGHT.png">
+  <img alt="ChainNusa Banner" src="assets/02_BANNER_LIGHT.png">
+</picture>
+
+<p align="center">
+  <img src="assets/03_LOGO_DARK.png" alt="ChainNusa Logo" width="120">
+</p>
+
+<p align="center">
+  <a href="README_ID.md">🇮🇩 Bahasa Indonesia</a>
+</p>
+
 # ChainNusa — Crypto Wallet Analyzer
 
 > On-chain intelligence platform for Southeast Asia.
 > Multi-chain wallet analyzer with AI summary. Powered by **Etherscan V2 + Claude (Anthropic)**.
 
 Input: `wallet address` + `chain` → Output: spending pattern analysis + AI summary in natural language.
-
-> [Versi Bahasa Indonesia](README_ID.md)
 
 ---
 
