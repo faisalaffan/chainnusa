@@ -19,4 +19,17 @@ contract MultiSigWalletTest is Test {
         owners[2] = owner3;
         wallet = new MultiSigWallet(owners, 2);
     }
+
+    function test_Deploy_Success() public {
+        assertEq(wallet.required(), 2);
+        address[] memory owners = wallet.getOwners();
+        assertEq(owners.length, 3);
+        assertEq(owners[0], owner1);
+        assertEq(owners[1], owner2);
+        assertEq(owners[2], owner3);
+        assertTrue(wallet.isOwner(owner1));
+        assertTrue(wallet.isOwner(owner2));
+        assertTrue(wallet.isOwner(owner3));
+        assertFalse(wallet.isOwner(stranger));
+    }
 }
