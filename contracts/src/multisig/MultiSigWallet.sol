@@ -18,4 +18,5 @@ contract MultiSigWallet {
     error InvalidRequired();
     error DuplicateOwner();
     error OwnerNotFound();
+    error CannotRemoveLastOwner();
 }
