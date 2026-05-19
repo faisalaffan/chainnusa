@@ -376,6 +376,48 @@ contract MultiSigWalletTest is Test {
         assertFalse(executed2);
         assertEq(count2, 2);
     }
+
+    function test_FullFlow_2of3_Wallet() public {
+        // Setup: 2-of-3 wallet, funded with 3 ETH
+        vm.deal(address(wallet), 3 ether);
+        address alice = owner1;
+        address bob = owner2;
+        address charlie = owner3;
+        address recipient = address(0x50);
+
+        // Alice submits: send 1.5 ETH to recipient
+        vm.prank(alice);
+        uint256 tx1 = wallet.submitTransaction(recipient, 1.5 ether, "");
+        assertEq(tx1, 0);
+
+        // Bob submits: send 0.5 ETH to recipient
+        vm.prank(bob);
+        uint256 tx2 = wallet.submitTransaction(recipient, 0.5 ether, "");
+        assertEq(tx2, 1);
+
+        // Charlie confirms tx1
+        vm.prank(charlie);
+        wallet.confirmTransaction(0);
+
+        // Execute tx1 (alice + charlie = 2)
+        uint256 recipientBalBefore = recipient.balance;
+        vm.prank(alice);
+        wallet.executeTransaction(0);
+        assertEq(recipient.balance, recipientBalBefore + 1.5 ether);
+
+        // Alice confirms tx2
+        vm.prank(alice);
+        wallet.confirmTransaction(1);
+
+        // Execute tx2 (bob + alice = 2)
+        vm.prank(bob);
+        wallet.executeTransaction(1);
+        assertEq(recipient.balance, recipientBalBefore + 2 ether);
+
+        // Wallet balance should be 1 ETH
+        assertEq(address(wallet).balance, 1 ether);
+        assertEq(wallet.getTransactionCount(), 2);
+    }
 }
 
 contract TestReceiver {
