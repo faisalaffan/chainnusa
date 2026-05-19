@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Usulkan fitur baru atau peningkatan
+about: Suggest a new feature or improvement
 title: "[FEAT] "
 labels: enhancement
 assignees: faisalaffan
@@ -8,20 +8,20 @@ assignees: faisalaffan
 
 ## Problem Statement
 
-<!-- Masalah apa yang ingin diselesaikan? -->
+<!-- What problem does this solve? -->
 
 ## Proposed Solution
 
-<!-- Deskripsikan solusi yang diusulkan -->
+<!-- Describe your proposed solution -->
 
 ## Alternatives Considered
 
-<!-- Alternatif yang sudah dipertimbangkan -->
+<!-- What alternatives have you considered? -->
 
 ## Impact Assessment
 
-<!-- Komponen mana yang terpengaruh? (web, ml-service, contracts, infra) -->
+<!-- Which components are affected? (web, ml-service, contracts, infra) -->
 
 ## Additional Context
 
-<!-- Referensi, desain, atau informasi tambahan -->
+<!-- References, designs, or any other relevant information -->

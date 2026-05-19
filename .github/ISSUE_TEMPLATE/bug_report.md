@@ -1,16 +1,16 @@
 ---
 name: Bug Report
-about: Laporkan bug atau masalah
+about: Report a bug or issue
 title: "[BUG] "
 labels: bug
 assignees: faisalaffan
 ---
 
-## Deskripsi Bug
+## Bug Description
 
-<!-- Jelaskan secara singkat apa bug-nya -->
+<!-- Briefly describe the bug -->
 
-## Cara Reproduksi
+## Steps to Reproduce
 
 1.
 2.
@@ -18,11 +18,11 @@ assignees: faisalaffan
 
 ## Expected Behavior
 
-<!-- Apa yang seharusnya terjadi? -->
+<!-- What should have happened? -->
 
 ## Actual Behavior
 
-<!-- Apa yang terjadi? Termasuk error log jika ada -->
+<!-- What actually happened? Include error log if any -->
 
 ## Environment
 
@@ -34,4 +34,4 @@ assignees: faisalaffan
 
 ## Additional Context
 
-<!-- Screenshot, log file, atau informasi tambahan -->
+<!-- Screenshots, log files, or any other relevant information -->
