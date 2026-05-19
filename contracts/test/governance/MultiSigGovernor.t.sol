@@ -31,7 +31,32 @@ contract MultiSigGovernorTest is Test {
 
         governor = new MultiSigGovernor(address(wallet), address(registry), address(sbt));
 
+        // Add governor as wallet owner so it can submit transactions on behalf of owners
+        wallet.addOwner(address(governor));
+
         // Transfer ownership of ReportSBT to governor so it can mint
         sbt.transferOwnership(address(governor));
+    }
+
+    function test_ProposeRecordAnalysis() public {
+        bytes32 cid = bytes32(uint256(0x1234));
+        address analyzedWallet = address(0x50);
+
+        vm.prank(owner1);
+        uint256 txIndex = governor.proposeRecordAnalysis(cid, 1, analyzedWallet);
+
+        // Proposal created in MultiSigWallet
+        assertEq(wallet.getTransactionCount(), 1);
+        (address to, uint256 value, , bool executed, ) = wallet.getTransaction(txIndex);
+        assertEq(to, address(registry));
+        assertEq(value, 0);
+        assertFalse(executed);
+    }
+
+    function test_ProposeRecordAnalysis_RevertIf_NotOwner() public {
+        bytes32 cid = bytes32(uint256(0x1234));
+        vm.prank(stranger);
+        vm.expectRevert(MultiSigGovernor.NotWalletOwner.selector);
+        governor.proposeRecordAnalysis(cid, 1, address(0x50));
     }
 }
