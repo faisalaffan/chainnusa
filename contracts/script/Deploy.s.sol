@@ -21,7 +21,6 @@ contract Deploy is Script {
         AnalysisRegistry registry = new AnalysisRegistry();
         console2.log("AnalysisRegistry deployed at:", address(registry));
 
-        vm.prank(deployer);
         ReportSBT sbt = new ReportSBT();
         console2.log("ReportSBT deployed at:", address(sbt));
 
