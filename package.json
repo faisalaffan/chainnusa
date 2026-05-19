@@ -19,7 +19,8 @@
     "contracts:slither": "cd contracts && slither . --fail-high",
     "infra:up": "cd infra && docker compose up -d",
     "infra:down": "cd infra && docker compose down",
-    "infra:full": "docker compose -f docker-compose.yml -f infra/docker-compose.yml up -d"
+    "infra:full": "docker compose -f docker-compose.yml -f infra/docker-compose.yml up -d",
+    "typecheck": "pnpm web:typecheck"
   },
   "engines": {
     "node": ">=20"
