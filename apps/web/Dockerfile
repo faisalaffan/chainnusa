@@ -6,7 +6,7 @@ FROM node:20-bookworm-slim AS base
 ENV PNPM_HOME="/pnpm" \
     PATH="/pnpm:$PATH" \
     NEXT_TELEMETRY_DISABLED=1
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 # ---------- deps ----------
 FROM base AS deps
