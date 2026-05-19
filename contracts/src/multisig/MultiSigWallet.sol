@@ -60,4 +60,9 @@ contract MultiSigWallet {
     function getOwners() external view returns (address[] memory) {
         return owners;
     }
+
+    // ---- Receive Function ----
+    receive() external payable {
+        emit Deposit(msg.sender, msg.value, address(this).balance);
+    }
 }

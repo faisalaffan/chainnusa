@@ -71,4 +71,24 @@ contract MultiSigWalletTest is Test {
         vm.expectRevert(MultiSigWallet.DuplicateOwner.selector);
         new MultiSigWallet(owners, 2);
     }
+
+    function test_Deposit_EmitsEvent() public {
+        vm.deal(stranger, 1 ether);
+
+        vm.prank(stranger);
+        vm.expectEmit(true, false, false, true);
+        emit MultiSigWallet.Deposit(stranger, 0.5 ether, 0.5 ether);
+        (bool ok,) = address(wallet).call{value: 0.5 ether}("");
+        assertTrue(ok);
+        assertEq(address(wallet).balance, 0.5 ether);
+    }
+
+    function test_Deposit_ReceiveFunction() public {
+        vm.deal(stranger, 1 ether);
+
+        vm.prank(stranger);
+        (bool ok,) = address(wallet).call{value: 0.3 ether}("");
+        assertTrue(ok);
+        assertEq(address(wallet).balance, 0.3 ether);
+    }
 }
