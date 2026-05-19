@@ -54,6 +54,7 @@ contract MultiSigWallet {
     );
 
     event ConfirmTransaction(address indexed owner, uint256 indexed txIndex);
+    event RevokeConfirmation(address indexed owner, uint256 indexed txIndex);
     event ExecuteTransaction(address indexed owner, uint256 indexed txIndex);
 
     // ---- Modifiers ----
@@ -118,6 +119,21 @@ contract MultiSigWallet {
         }
 
         emit ConfirmTransaction(msg.sender, txIndex);
+    }
+
+    function revokeConfirmation(
+        uint256 txIndex
+    ) external onlyOwner_ {
+        if (txIndex >= transactions.length) revert TxNotExist();
+        if (transactions[txIndex].executed) revert TxAlreadyExecuted();
+        if (!isConfirmed[txIndex][msg.sender]) revert NotConfirmed();
+
+        isConfirmed[txIndex][msg.sender] = false;
+        unchecked {
+            transactions[txIndex].numConfirmations--;
+        }
+
+        emit RevokeConfirmation(msg.sender, txIndex);
     }
 
     function executeTransaction(

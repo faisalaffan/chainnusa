@@ -306,6 +306,76 @@ contract MultiSigWalletTest is Test {
 
         assertEq(receiver.lastValue(), 42);
     }
+
+    // ---- Revoke Confirmation Tests ----
+
+    function test_Revoke_Success() public {
+        vm.prank(owner1);
+        wallet.submitTransaction(address(0x10), 1 ether, "");
+
+        assertTrue(wallet.isConfirmed(0, owner1));
+
+        vm.prank(owner1);
+        wallet.revokeConfirmation(0);
+
+        assertFalse(wallet.isConfirmed(0, owner1));
+        (,,, bool executed, uint256 numConfirmations) = wallet.getTransaction(0);
+        assertFalse(executed);
+        assertEq(numConfirmations, 0);
+    }
+
+    function test_Revoke_RevertIf_NotConfirmed() public {
+        vm.prank(owner1);
+        wallet.submitTransaction(address(0x10), 0, "");
+
+        vm.prank(owner2);
+        vm.expectRevert(MultiSigWallet.NotConfirmed.selector);
+        wallet.revokeConfirmation(0);
+    }
+
+    function test_Revoke_RevertIf_TxNotExist() public {
+        vm.prank(owner1);
+        vm.expectRevert(MultiSigWallet.TxNotExist.selector);
+        wallet.revokeConfirmation(99);
+    }
+
+    function test_Revoke_RevertIf_AlreadyExecuted() public {
+        vm.deal(address(wallet), 1 ether);
+        vm.prank(owner1);
+        wallet.submitTransaction(address(owner1), 1 ether, "");
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        vm.prank(owner1);
+        wallet.executeTransaction(0);
+
+        vm.prank(owner2);
+        vm.expectRevert(MultiSigWallet.TxAlreadyExecuted.selector);
+        wallet.revokeConfirmation(0);
+    }
+
+    function test_Revoke_AndReapprove() public {
+        vm.prank(owner1);
+        wallet.submitTransaction(address(0x10), 1 ether, "");
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        // Owner2 revokes
+        vm.prank(owner2);
+        wallet.revokeConfirmation(0);
+        (,,, bool executed, uint256 count) = wallet.getTransaction(0);
+        assertFalse(executed);
+        assertEq(count, 1);
+
+        // Owner2 re-approves
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+        (,,, bool executed2, uint256 count2) = wallet.getTransaction(0);
+        assertFalse(executed2);
+        assertEq(count2, 2);
+    }
 }
 
 contract TestReceiver {
