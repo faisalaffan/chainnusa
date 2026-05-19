@@ -59,4 +59,24 @@ contract MultiSigGovernorTest is Test {
         vm.expectRevert(MultiSigGovernor.NotWalletOwner.selector);
         governor.proposeRecordAnalysis(cid, 1, address(0x50));
     }
+
+    function test_ProposeMintSBT() public {
+        bytes32 analysisId = keccak256("analysis-1");
+        bytes32 cid = bytes32(uint256(0xabcd));
+        address recipient = address(0x50);
+
+        vm.prank(owner1);
+        uint256 txIndex = governor.proposeMintSBT(recipient, analysisId, cid);
+
+        assertEq(wallet.getTransactionCount(), 1);
+        (address to,,, bool executed,) = wallet.getTransaction(txIndex);
+        assertEq(to, address(sbt));
+        assertFalse(executed);
+    }
+
+    function test_ProposeMintSBT_RevertIf_NotOwner() public {
+        vm.prank(stranger);
+        vm.expectRevert(MultiSigGovernor.NotWalletOwner.selector);
+        governor.proposeMintSBT(address(0x50), bytes32(0), bytes32(0));
+    }
 }
