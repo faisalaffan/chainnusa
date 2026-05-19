@@ -377,6 +377,27 @@ contract MultiSigWalletTest is Test {
         assertEq(count2, 2);
     }
 
+    function test_ERC20_Transfer() public {
+        // Deploy mock ERC-20 and mint to wallet
+        MockERC20 token = new MockERC20("Test", "TST");
+        token.mint(address(wallet), 1000 ether);
+
+        address recipient = address(0x60);
+        bytes memory data = abi.encodeWithSignature("transfer(address,uint256)", recipient, 300 ether);
+
+        vm.prank(owner1);
+        wallet.submitTransaction(address(token), 0, data);
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        vm.prank(owner1);
+        wallet.executeTransaction(0);
+
+        assertEq(token.balanceOf(recipient), 300 ether);
+        assertEq(token.balanceOf(address(wallet)), 700 ether);
+    }
+
     function test_FullFlow_2of3_Wallet() public {
         // Setup: 2-of-3 wallet, funded with 3 ETH
         vm.deal(address(wallet), 3 ether);
@@ -495,6 +516,28 @@ contract MultiSigWalletTest is Test {
         vm.prank(owner1);
         vm.expectRevert(MultiSigWallet.DuplicateOwner.selector);
         wallet.executeTransaction(0);
+    }
+}
+
+contract MockERC20 {
+    string public name;
+    string public symbol;
+    mapping(address => uint256) public balanceOf;
+
+    constructor(string memory _name, string memory _symbol) {
+        name = _name;
+        symbol = _symbol;
+    }
+
+    function mint(address to, uint256 amount) external {
+        balanceOf[to] += amount;
+    }
+
+    function transfer(address to, uint256 amount) external returns (bool) {
+        require(balanceOf[msg.sender] >= amount, "insufficient balance");
+        balanceOf[msg.sender] -= amount;
+        balanceOf[to] += amount;
+        return true;
     }
 }
 
