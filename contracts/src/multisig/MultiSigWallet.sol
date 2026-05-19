@@ -33,6 +33,26 @@ contract MultiSigWallet {
     event OwnerRemoved(address indexed removedOwner);
     event RequirementChanged(uint256 newRequired);
 
+    // ---- Transaction Storage ----
+    struct Transaction {
+        address to;
+        uint96 value;
+        bytes data;
+        bool executed;
+        uint256 numConfirmations;
+    }
+
+    Transaction[] public transactions;
+    mapping(uint256 => mapping(address => bool)) public isConfirmed;
+
+    event SubmitTransaction(
+        address indexed owner,
+        uint256 indexed txIndex,
+        address indexed to,
+        uint256 value,
+        bytes data
+    );
+
     // ---- Modifiers ----
     modifier onlyOwner_() {
         if (!isOwner[msg.sender]) revert NotOwner();
@@ -59,6 +79,43 @@ contract MultiSigWallet {
     // ---- View Functions ----
     function getOwners() external view returns (address[] memory) {
         return owners;
+    }
+
+    // ---- Transaction Functions ----
+    function submitTransaction(
+        address to,
+        uint256 value,
+        bytes calldata data
+    ) external onlyOwner_ returns (uint256 txIndex) {
+        txIndex = transactions.length;
+        transactions.push(
+            Transaction({
+                to: to,
+                value: uint96(value),
+                data: data,
+                executed: false,
+                numConfirmations: 1
+            })
+        );
+        isConfirmed[txIndex][msg.sender] = true;
+
+        emit SubmitTransaction(msg.sender, txIndex, to, value, data);
+    }
+
+    function getTransactionCount() external view returns (uint256) {
+        return transactions.length;
+    }
+
+    function getTransaction(
+        uint256 txIndex
+    )
+        external
+        view
+        returns (address to, uint256 value, bytes memory data, bool executed, uint256 numConfirmations)
+    {
+        if (txIndex >= transactions.length) revert TxNotExist();
+        Transaction storage t = transactions[txIndex];
+        return (t.to, t.value, t.data, t.executed, t.numConfirmations);
     }
 
     // ---- Receive Function ----

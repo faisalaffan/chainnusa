@@ -83,6 +83,52 @@ contract MultiSigWalletTest is Test {
         assertEq(address(wallet).balance, 0.5 ether);
     }
 
+    // ---- Submit Transaction Tests ----
+
+    function test_Submit_Success() public {
+        vm.prank(owner1);
+        uint256 txIndex = wallet.submitTransaction(address(0x10), 1 ether, "");
+        assertEq(txIndex, 0);
+        assertEq(wallet.getTransactionCount(), 1);
+
+        (address to, uint256 value, bytes memory data, bool executed, uint256 numConfirmations) =
+            wallet.getTransaction(0);
+        assertEq(to, address(0x10));
+        assertEq(value, 1 ether);
+        assertEq(data, "");
+        assertFalse(executed);
+        assertEq(numConfirmations, 1); // submitter auto-approves
+    }
+
+    function test_Submit_AutoConfirmsBySubmitter() public {
+        vm.prank(owner1);
+        wallet.submitTransaction(address(0x10), 0, "");
+        assertTrue(wallet.isConfirmed(0, owner1));
+    }
+
+    function test_Submit_RevertIf_NotOwner() public {
+        vm.prank(stranger);
+        vm.expectRevert(MultiSigWallet.NotOwner.selector);
+        wallet.submitTransaction(address(0x10), 0, "");
+    }
+
+    function test_Submit_IncrementsTxIndex() public {
+        vm.startPrank(owner1);
+        wallet.submitTransaction(address(0x10), 0, "");
+        wallet.submitTransaction(address(0x11), 0, "");
+        wallet.submitTransaction(address(0x12), 0, "");
+        vm.stopPrank();
+        assertEq(wallet.getTransactionCount(), 3);
+    }
+
+    function test_Submit_WithCalldata() public {
+        bytes memory data = abi.encodeWithSignature("transfer(address,uint256)", owner2, 100);
+        vm.prank(owner1);
+        uint256 txIndex = wallet.submitTransaction(address(0x10), 0, data);
+        (,, bytes memory storedData,,) = wallet.getTransaction(txIndex);
+        assertEq(storedData, data);
+    }
+
     function test_Deposit_ReceiveFunction() public {
         vm.deal(stranger, 1 ether);
 
