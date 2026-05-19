@@ -1,50 +1,50 @@
 # Contributing to ChainNusa
 
-Terima kasih atas minat berkontribusi ke ChainNusa!
+Thanks for your interest in contributing!
 
-## Cara Berkontribusi
+## How to Contribute
 
 ### Bug Reports
 
-Gunakan template bug report saat membuat issue. Sertakan:
-- Versi Node.js dan pnpm
-- Network/chain yang digunakan
-- Langkah reproduksi yang jelas
-- Error log lengkap
+Use the bug report template when creating an issue. Include:
+- Node.js and pnpm versions
+- Network/chain used
+- Clear reproduction steps
+- Full error log
 
 ### Feature Requests
 
-Gunakan template feature request. Jelaskan:
-- Masalah yang ingin diselesaikan
-- Alternatif yang sudah dipertimbangkan
-- Dampak ke komponen existing (web, ml-service, contracts)
+Use the feature request template. Describe:
+- The problem you want to solve
+- Alternatives you've considered
+- Impact on existing components (web, ml-service, contracts)
 
 ### Pull Requests
 
-1. Fork repo dan buat branch dari `dev`
-2. Ikuti [Conventional Commits](https://www.conventionalcommits.org/) — `feat:`, `fix:`, `test:`, `docs:`, `chore:`
-3. TDD untuk perubahan kontrak (`forge test` sebelum implementasi)
-4. Verifikasi sebelum PR:
+1. Fork the repo and create a branch from `dev`
+2. Follow [Conventional Commits](https://www.conventionalcommits.org/) — `feat:`, `fix:`, `test:`, `docs:`, `chore:`
+3. TDD for contract changes (`forge test` before implementation)
+4. Verify before PR:
    ```bash
    pnpm web:typecheck
    pnpm contracts:test
    ```
-5. PR ke branch `dev`
+5. PR to `dev` branch
 
 ### Development Setup
 
 ```bash
 pnpm install
-cp .env.example .env  # edit sesuai kebutuhan
+cp .env.example .env  # edit as needed
 pnpm dev
 ```
 
-Lihat [README.md](./README.md) untuk setup lengkap.
+See [README.md](./README.md) for full setup instructions.
 
 ### Code Style
 
-- Solidity: ikuti [Solidity Style Guide](https://docs.soliditylang.org/en/latest/style-guide.html)
-- TypeScript: ESLint config sudah disediakan (`pnpm web:lint`)
+- Solidity: follow the [Solidity Style Guide](https://docs.soliditylang.org/en/latest/style-guide.html)
+- TypeScript: ESLint config provided (`pnpm web:lint`)
 - Python: Ruff (`pnpm ml:lint`)
 
 ### Commit Convention

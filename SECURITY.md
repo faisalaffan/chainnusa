@@ -9,45 +9,45 @@
 
 ## Reporting a Vulnerability
 
-**JANGAN buat issue publik untuk vulnerability.**
+**Do NOT open a public issue for vulnerabilities.**
 
-Kirim laporan ke: **faisalaffan@proton.me**
+Send reports to: **faisalaffan@proton.me**
 
-Response time target:
-- Acknowledgment: 48 jam
-- Initial assessment: 5 hari kerja
-- Fix release: tergantung severity (7-30 hari)
+Response time targets:
+- Acknowledgment: 48 hours
+- Initial assessment: 5 business days
+- Fix release: depends on severity (7–30 days)
 
 ### Scope
 
-Yang termasuk vulnerability:
+In-scope vulnerabilities:
 - Smart contract reentrancy, overflow, access control bypass
-- Private key atau API key leak di codebase/CI logs
-- SQL injection, XSS, SSRF di web app
-- RCE di ML service
+- Private key or API key leaks in codebase/CI logs
+- SQL injection, XSS, SSRF in the web app
+- RCE in the ML service
 
-Yang bukan vulnerability:
+Out of scope:
 - Missing HTTP security headers (low severity)
 - Rate limiting (enhancement)
-- Dependency versions yang tidak EOL
+- Non-EOL dependency versions
 
 ## Smart Contract Security
 
-Kontrak di `contracts/src/` mengikuti praktik berikut:
+Contracts in `contracts/src/` follow these practices:
 
 - Solidity ^0.8.24 — built-in overflow protection
-- CEI (Checks-Effects-Interactions) pattern untuk semua eksternal call
-- Custom errors untuk gas efficiency
-- OpenZeppelin contracts untuk standar komponen (ERC-721, Ownable)
+- CEI (Checks-Effects-Interactions) pattern for all external calls
+- Custom errors for gas efficiency
+- OpenZeppelin contracts for standard components (ERC-721, Ownable)
 
 ### Audit Status
 
-Slither static analysis dijalankan via CI (`pnpm contracts:slither`).
+Slither static analysis runs via CI (`pnpm contracts:slither`).
 
 ## Disclosure Policy
 
-1. Reporter mengirim laporan
-2. Maintainer acknowledge dalam 48 jam
-3. Fix dikembangkan di private branch
+1. Reporter submits a report
+2. Maintainer acknowledges within 48 hours
+3. Fix is developed in a private branch
 4. Coordinated disclosure: patch release + advisory
-5. Credit diberikan di release notes (kecuali reporter memilih anonim)
+5. Credit given in release notes (unless reporter chooses anonymity)
