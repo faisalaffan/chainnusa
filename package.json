@@ -20,7 +20,8 @@
     "infra:up": "cd infra && docker compose up -d",
     "infra:down": "cd infra && docker compose down",
     "infra:full": "docker compose -f docker-compose.yml -f infra/docker-compose.yml up -d",
-    "typecheck": "pnpm web:typecheck"
+    "typecheck": "pnpm web:typecheck",
+    "build": "pnpm web:build"
   },
   "engines": {
     "node": ">=20"
