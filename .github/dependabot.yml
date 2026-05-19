@@ -1,0 +1,44 @@
+version: 2
+updates:
+  # npm/pnpm dependencies (root + apps/web)
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Jakarta
+    target-branch: dev
+    labels:
+      - dependencies
+      - javascript
+    versioning-strategy: increase
+    open-pull-requests-limit: 5
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Jakarta
+    target-branch: dev
+    labels:
+      - dependencies
+      - ci-cd
+    open-pull-requests-limit: 3
+
+  # Python/pip (ml-service)
+  - package-ecosystem: pip
+    directory: "/ml-service"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Jakarta
+    target-branch: dev
+    labels:
+      - dependencies
+      - python
+    open-pull-requests-limit: 3

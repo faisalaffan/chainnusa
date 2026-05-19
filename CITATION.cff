@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "Jika menggunakan ChainNusa dalam riset, silakan sitasi sebagai berikut."
+title: ChainNusa — On-Chain Wallet Intelligence Platform
+authors:
+  - family-names: Affan
+    given-names: Muhammad Faisal
+    orcid: https://orcid.org/0009-0000-0000-0000
+repository-code: https://github.com/faisalaffan/chainnusa
+url: https://github.com/faisalaffan/chainnusa
+abstract: Multi-chain wallet analyzer dengan AI summary. Mendukung Ethereum, BSC, Polygon via Etherscan V2 + Claude/Ollama. Termasuk MultiSigWallet smart contract dan on-chain analysis registry.
+keywords:
+  - blockchain
+  - ethereum
+  - wallet-analysis
+  - multi-signature
+  - solidity
+  - foundry
+  - nextjs
+license: MIT
+version: 0.2.0
+date-released: "2026-05-19"

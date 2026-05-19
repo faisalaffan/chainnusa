@@ -1,0 +1,21 @@
+# ChainNusa Code Owners
+# Auto-assign PR reviewers berdasarkan path.
+
+# Global — Faisal owns everything by default
+* @faisalaffan
+
+# Smart contracts (Solidity + Foundry)
+contracts/ @faisalaffan
+
+# Web app (Next.js)
+apps/web/ @faisalaffan
+
+# ML service (Python/FastAPI)
+ml-service/ @faisalaffan
+
+# CI/CD
+.github/ @faisalaffan
+
+# Documentation
+*.md @faisalaffan
+docs/ @faisalaffan
