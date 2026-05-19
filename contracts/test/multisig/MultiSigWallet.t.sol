@@ -195,4 +195,125 @@ contract MultiSigWalletTest is Test {
         assertFalse(executed2);
         assertEq(count2, 2);
     }
+
+    // ---- Execute Transaction Tests ----
+
+    function test_Execute_Success_ETHTransfer() public {
+        // Fund the wallet
+        vm.deal(address(wallet), 2 ether);
+
+        // Owner1 submits a transfer to recipient
+        address recipient = address(0x50);
+        vm.prank(owner1);
+        wallet.submitTransaction(recipient, 1 ether, "");
+
+        // Owner2 confirms
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        uint256 recipientBalBefore = recipient.balance;
+
+        // Anyone can execute once threshold met
+        vm.prank(stranger);
+        wallet.executeTransaction(0);
+
+        assertEq(recipient.balance, recipientBalBefore + 1 ether);
+        (,,, bool executed,) = wallet.getTransaction(0);
+        assertTrue(executed);
+    }
+
+    function test_Execute_RevertIf_NotEnoughConfirmations() public {
+        vm.deal(address(wallet), 1 ether);
+        vm.prank(owner1);
+        wallet.submitTransaction(address(0x50), 0.5 ether, "");
+
+        // Only 1 of 2 required
+        vm.prank(owner1);
+        vm.expectRevert(MultiSigWallet.NotEnoughConfirmations.selector);
+        wallet.executeTransaction(0);
+    }
+
+    function test_Execute_RevertIf_AlreadyExecuted() public {
+        vm.deal(address(wallet), 1 ether);
+        vm.prank(owner1);
+        wallet.submitTransaction(address(0x50), 0.5 ether, "");
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        vm.prank(owner1);
+        wallet.executeTransaction(0);
+
+        vm.prank(owner1);
+        vm.expectRevert(MultiSigWallet.TxAlreadyExecuted.selector);
+        wallet.executeTransaction(0);
+    }
+
+    function test_Execute_RevertIf_TxNotExist() public {
+        vm.prank(owner1);
+        vm.expectRevert(MultiSigWallet.TxNotExist.selector);
+        wallet.executeTransaction(99);
+    }
+
+    function test_Execute_CanBeCalledByAnyone() public {
+        vm.deal(address(wallet), 1 ether);
+        vm.prank(owner1);
+        wallet.submitTransaction(address(0x50), 0.5 ether, "");
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        // Stranger executes
+        vm.prank(stranger);
+        wallet.executeTransaction(0);
+
+        (,,, bool executed,) = wallet.getTransaction(0);
+        assertTrue(executed);
+    }
+
+    function test_Execute_FailedCall_DoesNotMarkExecuted() public {
+        vm.deal(address(wallet), 1 ether);
+        // Submit tx to send more than balance — will fail
+        vm.prank(owner1);
+        wallet.submitTransaction(address(0x50), 2 ether, ""); // more than balance
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        vm.prank(owner1);
+        // Should revert due to insufficient balance
+        vm.expectRevert(MultiSigWallet.ExecutionFailed.selector);
+        wallet.executeTransaction(0);
+
+        (,,, bool executed,) = wallet.getTransaction(0);
+        assertFalse(executed);
+    }
+
+    function test_Execute_WithCalldata() public {
+        // Deploy a simple receiver contract
+        TestReceiver receiver = new TestReceiver();
+        vm.deal(address(wallet), 1 ether);
+
+        bytes memory data = abi.encodeWithSignature("receiveData(uint256)", 42);
+        vm.prank(owner1);
+        wallet.submitTransaction(address(receiver), 0, data);
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        vm.prank(owner1);
+        wallet.executeTransaction(0);
+
+        assertEq(receiver.lastValue(), 42);
+    }
+}
+
+contract TestReceiver {
+    uint256 public lastValue;
+
+    function receiveData(uint256 value) external {
+        lastValue = value;
+    }
+
+    receive() external payable {}
 }
