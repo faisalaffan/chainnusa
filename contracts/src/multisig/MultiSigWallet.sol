@@ -53,6 +53,8 @@ contract MultiSigWallet {
         bytes data
     );
 
+    event ConfirmTransaction(address indexed owner, uint256 indexed txIndex);
+
     // ---- Modifiers ----
     modifier onlyOwner_() {
         if (!isOwner[msg.sender]) revert NotOwner();
@@ -100,6 +102,21 @@ contract MultiSigWallet {
         isConfirmed[txIndex][msg.sender] = true;
 
         emit SubmitTransaction(msg.sender, txIndex, to, value, data);
+    }
+
+    function confirmTransaction(
+        uint256 txIndex
+    ) external onlyOwner_ {
+        if (txIndex >= transactions.length) revert TxNotExist();
+        if (transactions[txIndex].executed) revert TxAlreadyExecuted();
+        if (isConfirmed[txIndex][msg.sender]) revert TxAlreadyConfirmed();
+
+        isConfirmed[txIndex][msg.sender] = true;
+        unchecked {
+            transactions[txIndex].numConfirmations++;
+        }
+
+        emit ConfirmTransaction(msg.sender, txIndex);
     }
 
     function getTransactionCount() external view returns (uint256) {

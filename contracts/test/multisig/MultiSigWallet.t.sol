@@ -137,4 +137,62 @@ contract MultiSigWalletTest is Test {
         assertTrue(ok);
         assertEq(address(wallet).balance, 0.3 ether);
     }
+
+    // ---- Confirm Transaction Tests ----
+
+    function test_Confirm_Success() public {
+        vm.prank(owner1);
+        wallet.submitTransaction(address(0x10), 1 ether, "");
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        assertTrue(wallet.isConfirmed(0, owner2));
+        (,,, bool executed, uint256 numConfirmations) = wallet.getTransaction(0);
+        assertFalse(executed);
+        assertEq(numConfirmations, 2);
+    }
+
+    function test_Confirm_RevertIf_NotOwner() public {
+        vm.prank(owner1);
+        wallet.submitTransaction(address(0x10), 0, "");
+
+        vm.prank(stranger);
+        vm.expectRevert(MultiSigWallet.NotOwner.selector);
+        wallet.confirmTransaction(0);
+    }
+
+    function test_Confirm_RevertIf_AlreadyConfirmed() public {
+        vm.prank(owner1);
+        wallet.submitTransaction(address(0x10), 0, "");
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        vm.prank(owner2);
+        vm.expectRevert(MultiSigWallet.TxAlreadyConfirmed.selector);
+        wallet.confirmTransaction(0);
+    }
+
+    function test_Confirm_RevertIf_TxNotExist() public {
+        vm.prank(owner1);
+        vm.expectRevert(MultiSigWallet.TxNotExist.selector);
+        wallet.confirmTransaction(99);
+    }
+
+    function test_GetConfirmationCount() public {
+        vm.prank(owner1);
+        wallet.submitTransaction(address(0x10), 0, "");
+
+        (,,, bool executed, uint256 count) = wallet.getTransaction(0);
+        assertFalse(executed);
+        assertEq(count, 1);
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        (,,, bool executed2, uint256 count2) = wallet.getTransaction(0);
+        assertFalse(executed2);
+        assertEq(count2, 2);
+    }
 }
