@@ -418,6 +418,84 @@ contract MultiSigWalletTest is Test {
         assertEq(address(wallet).balance, 1 ether);
         assertEq(wallet.getTransactionCount(), 2);
     }
+
+    // ---- Owner Management via Internal Proposal Tests ----
+
+    function test_AddOwner_ViaMultiSig() public {
+        address newOwner = address(0x99);
+
+        // Submit proposal: addOwner encoded as calldata to self
+        bytes memory data = abi.encodeWithSignature("addOwner(address)", newOwner);
+        vm.prank(owner1);
+        wallet.submitTransaction(address(wallet), 0, data);
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        vm.prank(owner1);
+        wallet.executeTransaction(0);
+
+        assertTrue(wallet.isOwner(newOwner));
+        assertEq(wallet.getOwners().length, 4);
+    }
+
+    function test_RemoveOwner_ViaMultiSig() public {
+        // Submit proposal: removeOwner
+        bytes memory data = abi.encodeWithSignature("removeOwner(address)", owner3);
+        vm.prank(owner1);
+        wallet.submitTransaction(address(wallet), 0, data);
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        vm.prank(owner1);
+        wallet.executeTransaction(0);
+
+        assertFalse(wallet.isOwner(owner3));
+        assertEq(wallet.getOwners().length, 2);
+    }
+
+    function test_ChangeThreshold_ViaMultiSig() public {
+        bytes memory data = abi.encodeWithSignature("changeRequirement(uint256)", 3);
+        vm.prank(owner1);
+        wallet.submitTransaction(address(wallet), 0, data);
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        // Need 3 approvals for threshold change? No — current threshold is 2
+        vm.prank(owner1);
+        wallet.executeTransaction(0);
+
+        assertEq(wallet.required(), 3);
+    }
+
+    function test_RemoveOwner_RevertIf_ThresholdWouldBreak() public {
+        // 2-of-3 → try to change to 4-of-3 (invalid)
+        bytes memory data = abi.encodeWithSignature("changeRequirement(uint256)", 4);
+        vm.prank(owner1);
+        wallet.submitTransaction(address(wallet), 0, data);
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        vm.prank(owner1);
+        vm.expectRevert(MultiSigWallet.InvalidRequired.selector);
+        wallet.executeTransaction(0);
+    }
+
+    function test_AddOwner_RevertIf_Duplicate() public {
+        bytes memory data = abi.encodeWithSignature("addOwner(address)", owner1);
+        vm.prank(owner1);
+        wallet.submitTransaction(address(wallet), 0, data);
+
+        vm.prank(owner2);
+        wallet.confirmTransaction(0);
+
+        vm.prank(owner1);
+        vm.expectRevert(MultiSigWallet.DuplicateOwner.selector);
+        wallet.executeTransaction(0);
+    }
 }
 
 contract TestReceiver {

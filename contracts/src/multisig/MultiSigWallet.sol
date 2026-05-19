@@ -136,6 +136,44 @@ contract MultiSigWallet {
         emit RevokeConfirmation(msg.sender, txIndex);
     }
 
+    // ---- Owner Management Functions ----
+
+    function addOwner(address newOwner) external {
+        if (newOwner == address(0)) revert InvalidOwner();
+        if (isOwner[newOwner]) revert DuplicateOwner();
+
+        isOwner[newOwner] = true;
+        owners.push(newOwner);
+
+        emit OwnerAdded(newOwner);
+    }
+
+    function removeOwner(address owner) external {
+        if (!isOwner[owner]) revert OwnerNotFound();
+        if (owners.length == 1) revert CannotRemoveLastOwner();
+
+        isOwner[owner] = false;
+
+        // Remove from array — order doesn't matter, swap and pop
+        for (uint256 i = 0; i < owners.length; i++) {
+            if (owners[i] == owner) {
+                owners[i] = owners[owners.length - 1];
+                owners.pop();
+                break;
+            }
+        }
+
+        if (required > owners.length) revert InvalidRequired();
+
+        emit OwnerRemoved(owner);
+    }
+
+    function changeRequirement(uint256 newRequired) external {
+        if (newRequired == 0 || newRequired > owners.length) revert InvalidRequired();
+        required = newRequired;
+        emit RequirementChanged(newRequired);
+    }
+
     function executeTransaction(
         uint256 txIndex
     ) external {
@@ -148,8 +186,17 @@ contract MultiSigWallet {
         // Checks-Effects-Interactions pattern
         t.executed = true;
 
-        (bool success, ) = t.to.call{value: t.value}(t.data);
-        if (!success) revert ExecutionFailed();
+        (bool success, bytes memory returnData) = t.to.call{value: t.value}(t.data);
+        if (!success) {
+            // Propagate the revert reason from the internal call
+            if (returnData.length > 0) {
+                assembly {
+                    revert(add(returnData, 32), mload(returnData))
+                }
+            } else {
+                revert ExecutionFailed();
+            }
+        }
 
         emit ExecuteTransaction(msg.sender, txIndex);
     }
