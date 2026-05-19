@@ -32,4 +32,43 @@ contract MultiSigWalletTest is Test {
         assertTrue(wallet.isOwner(owner3));
         assertFalse(wallet.isOwner(stranger));
     }
+
+    function test_Deploy_RevertIf_NoOwners() public {
+        address[] memory emptyOwners = new address[](0);
+        vm.expectRevert(MultiSigWallet.InvalidOwner.selector);
+        new MultiSigWallet(emptyOwners, 1);
+    }
+
+    function test_Deploy_RevertIf_InvalidRequired_Zero() public {
+        address[] memory owners = new address[](2);
+        owners[0] = owner1;
+        owners[1] = owner2;
+        vm.expectRevert(MultiSigWallet.InvalidRequired.selector);
+        new MultiSigWallet(owners, 0);
+    }
+
+    function test_Deploy_RevertIf_InvalidRequired_TooHigh() public {
+        address[] memory owners = new address[](2);
+        owners[0] = owner1;
+        owners[1] = owner2;
+        vm.expectRevert(MultiSigWallet.InvalidRequired.selector);
+        new MultiSigWallet(owners, 3);
+    }
+
+    function test_Deploy_RevertIf_ZeroAddressOwner() public {
+        address[] memory owners = new address[](2);
+        owners[0] = owner1;
+        owners[1] = address(0);
+        vm.expectRevert(MultiSigWallet.InvalidOwner.selector);
+        new MultiSigWallet(owners, 2);
+    }
+
+    function test_Deploy_RevertIf_DuplicateOwner() public {
+        address[] memory owners = new address[](3);
+        owners[0] = owner1;
+        owners[1] = owner2;
+        owners[2] = owner1; // duplicate
+        vm.expectRevert(MultiSigWallet.DuplicateOwner.selector);
+        new MultiSigWallet(owners, 2);
+    }
 }
