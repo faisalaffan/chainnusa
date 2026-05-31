@@ -13,6 +13,16 @@ pnpm web:start               # Jalankan production build (port 3000)
 pnpm web:typecheck           # TypeScript check (tsc --noEmit)
 pnpm web:lint                # ESLint
 
+# Smart Contracts — Foundry
+pnpm contracts:build         # Forge build (solc 0.8.24)
+pnpm contracts:test          # Forge test -vv
+pnpm contracts:slither       # Slither static analysis
+
+# Smart Contracts — Hardhat
+pnpm contracts:hh-compile    # Hardhat compile
+pnpm contracts:hh-test       # Hardhat test
+pnpm contracts:hh-clean      # Clean Hardhat artifacts
+
 # ML Service
 pnpm ml:dev                  # FastAPI dev server (port 8000)
 pnpm ml:test                 # pytest
@@ -22,7 +32,7 @@ docker compose up -d
 docker compose exec ollama ollama pull qwen2.5:7b
 ```
 
-> Package manager: `pnpm@10`. Node >=20. Python >=3.11 untuk ml-service.
+> Package manager: `pnpm@10`. Node >=20. Python >=3.11 untuk ml-service. Smart contracts: dual build (Foundry + Hardhat), solc 0.8.24, OpenZeppelin 5.6.1.
 
 ## Arsitektur
 
@@ -47,7 +57,7 @@ Factory function (`getDataProvider()` / `getLlmProvider()`) membaca env dan meng
 ### Layer Analisis (`src/lib/analyzer.ts`)
 
 Fungsi `analyze()` menerima native balance + normal tx + token tx, menghasilkan:
-- Kategorisasi heuristic: transfer/contract/DEX swap (methodId Uniswap V2/V3)/failed/self
+- Kategorisasi heuristic: transfer/contract/DEX swap (Uniswap V2/V3 + GMX v2 + dYdX v3)/failed/self
 - Agregasi: total native in/out, gas spent, top counterparties, per-token summary, daily histogram
 - Tidak ada dependency network/DB — pure computation
 
