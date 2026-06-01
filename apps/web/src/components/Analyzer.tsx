@@ -206,7 +206,7 @@ function FormCard(props: {
         <button
           onClick={onRefresh}
           disabled={loading || !canRefresh}
-          title="Refresh tanpa cache"
+          title="Refresh without cache"
           className="bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-2.5 rounded-lg text-sm flex items-center gap-2 justify-center border border-white/10"
         >
           <RefreshCcw className="w-4 h-4" />
@@ -443,7 +443,7 @@ function CounterpartiesList({
   explorerUrl: string;
 }) {
   if (!analysis.topCounterparties.length) {
-    return <p className="text-sm text-white/50">Tidak ada counterparty.</p>;
+    return <p className="text-sm text-white/50">No counterparties found.</p>;
   }
   return (
     <ul className="text-sm divide-y divide-white/5">
@@ -473,7 +473,7 @@ function CounterpartiesList({
 
 function TokensList({ analysis, explorerUrl }: { analysis: AnalysisResult; explorerUrl: string }) {
   if (!analysis.tokens.length) {
-    return <p className="text-sm text-white/50">Tidak ada aktivitas token.</p>;
+    return <p className="text-sm text-white/50">No token activity found.</p>;
   }
   return (
     <div className="overflow-x-auto">
@@ -517,7 +517,7 @@ function TokensList({ analysis, explorerUrl }: { analysis: AnalysisResult; explo
 
 function TxTable({ analysis, explorerUrl }: { analysis: AnalysisResult; explorerUrl: string }) {
   if (!analysis.sampleTxs.length) {
-    return <p className="text-sm text-white/50">Tidak ada transaksi.</p>;
+    return <p className="text-sm text-white/50">No transactions found.</p>;
   }
   const me = analysis.address.toLowerCase();
   return (

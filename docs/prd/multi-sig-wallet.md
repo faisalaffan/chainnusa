@@ -12,46 +12,46 @@
 
 ### 1.1 Product Summary
 
-Multi-signature wallet smart contract yang membutuhkan persetujuan dari minimal N dari M owner sebelum transaksi dieksekusi. Dibangun dengan arsitektur **modular** (Pendekatan B) — kontrak mandiri MultiSigWallet + MultiSigGovernor adapter ke kontrak ChainNusa existing (AnalysisRegistry, ReportSBT). Dibangun sebagai portfolio project dengan production-grade quality: full test coverage, security audit, dan frontend yang dapat digunakan langsung.
+A multi-signature wallet smart contract that requires approval from a minimum of N out of M owners before a transaction can be executed. Built with a **modular** architecture (Approach B) — standalone MultiSigWallet contract + MultiSigGovernor adapter to existing ChainNusa contracts (AnalysisRegistry, ReportSBT). Built as a portfolio project with production-grade quality: full test coverage, security audit, and a directly usable frontend.
 
 ### 1.2 Goals
 
-- Demonstrasi kemampuan Solidity dan Rust smart contract development
-- Production-ready codebase yang dapat dipresentasikan ke recruiter atau klien
-- Arsitektur modular: MultiSigWallet (standalone) + MultiSigGovernor (governance untuk AnalysisRegistry & ReportSBT)
-- Test coverage minimal 95% dengan forge test (EVM) dan solana-test-validator (Solana)
-- Integrasi penuh dengan ChainNusa analytics platform yang sudah ada
+- Demonstrate Solidity and Rust smart contract development skills
+- Production-ready codebase presentable to recruiters or clients
+- Modular architecture: MultiSigWallet (standalone) + MultiSigGovernor (governance for AnalysisRegistry & ReportSBT)
+- Minimum 95% test coverage with forge test (EVM) and solana-test-validator (Solana)
+- Full integration with the existing ChainNusa analytics platform
 
 ### 1.3 Non-Goals
 
-- Tidak mendukung token ERC-1155 pada versi pertama
-- Tidak ada mekanisme dispute atau arbitrasi
-- Tidak ada mobile app (web only)
-- Tidak ada support multi-chain dalam satu deployment
+- No ERC-1155 token support in the first version
+- No dispute or arbitration mechanism
+- No mobile app (web only)
+- No multi-chain support in a single deployment
 
 ---
 
-## 2. Architecture — Pendekatan B (Modular)
+## 2. Architecture — Approach B (Modular)
 
-### 2.1 Kenapa Modular?
+### 2.1 Why Modular?
 
-Proyek ChainNusa sudah memiliki smart contract (`AnalysisRegistry.sol` + `ReportSBT.sol`) di `contracts/`. Arsitektur modular memungkinkan:
+The ChainNusa project already has smart contracts (`AnalysisRegistry.sol` + `ReportSBT.sol`) in `contracts/`. A modular architecture enables:
 
-- **MultiSigWallet** — kontrak mandiri, tidak coupled dengan apa pun, reusable di proyek lain
-- **MultiSigGovernor** — adapter pattern, menghubungkan MultiSigWallet dengan kontrak existing ChainNusa
-- Incremental build: MultiSigWallet dulu (test + deploy), Governance menyusul
-- Setiap komponen testable independen
+- **MultiSigWallet** — standalone contract, not coupled to anything, reusable in other projects
+- **MultiSigGovernor** — adapter pattern, connecting MultiSigWallet with existing ChainNusa contracts
+- Incremental build: MultiSigWallet first (test + deploy), Governance follows
+- Each component is independently testable
 
-### 2.2 Komponen
+### 2.2 Components
 
 ```
 contracts/src/
 ├── multisig/
-│   ├── MultiSigWallet.sol         # Kontrak multi-sig mandiri
+│   ├── MultiSigWallet.sol         # Standalone multi-sig contract
 │   └── IMultiSigWallet.sol        # Interface + events
 ├── governance/
 │   ├── MultiSigGovernor.sol       # Adapter: multi-sig → existing contracts
-│   └── IMultiSigGovernor.sol      # Interface governance
+│   └── IMultiSigGovernor.sol      # Governance interface
 ├── AnalysisRegistry.sol           # Existing — on-chain registry
 ├── ReportSBT.sol                  # Existing — soulbound NFT
 ├── lib/
@@ -63,12 +63,12 @@ contracts/test/
 │   └── MultiSigWallet.fuzz.t.sol  # Fuzz tests
 ├── governance/
 │   ├── MultiSigGovernor.t.sol     # Unit tests
-│   └── MultiSigGovernor.integration.t.sol  # Integration dengan kontrak existing
+│   └── MultiSigGovernor.integration.t.sol  # Integration with existing contracts
 └── helpers/
     └── TestHelpers.sol            # Shared test utilities
 ```
 
-### 2.3 Interaksi Antar Komponen
+### 2.3 Component Interactions
 
 ```
 MultiSigWallet (standalone)
@@ -79,9 +79,9 @@ MultiSigWallet (standalone)
     │
     └── Governance via MultiSigGovernor:
          │
-         ├── AnalysisRegistry: recordAnalysis() hanya via multi-sig
-         ├── ReportSBT: mint() hanya via multi-sig
-         └── (extensible) kontrak baru bisa plug-in ke governor
+         ├── AnalysisRegistry: recordAnalysis() only via multi-sig
+         ├── ReportSBT: mint() only via multi-sig
+         └── (extensible) new contracts can plug into the governor
 ```
 
 ---
@@ -90,27 +90,27 @@ MultiSigWallet (standalone)
 
 ### 3.1 MultiSigWallet (Standalone)
 
-| ID | Sebagai | Saya ingin | Sehingga |
-|----|---------|------------|----------|
-| US-01 | Owner | Deploy wallet dengan daftar owner dan threshold | Wallet siap dipakai |
-| US-02 | Owner | Submit transaksi baru | Owner lain bisa approve |
-| US-03 | Owner | Approve transaksi yang disubmit owner lain | Transaksi bisa dieksekusi |
-| US-04 | Owner | Revoke approval saya sebelum eksekusi | Saya bisa berubah pikiran |
-| US-05 | Anyone | Eksekusi transaksi yang sudah cukup approval | Dana terkirim ke recipient |
-| US-06 | Owner | Lihat semua transaksi pending | Saya tahu apa yang perlu di-approve |
-| US-07 | Anyone | Lihat history transaksi yang sudah dieksekusi | Ada audit trail |
-| US-08 | Anyone | Deposit ETH ke wallet | Wallet punya saldo |
-| US-09 | Owner | Submit proposal tambah/hapus owner (butuh threshold) | Manajemen akses |
-| US-10 | Owner | Submit proposal ganti threshold (butuh threshold) | Fleksibilitas governance |
-| US-11 | Owner | Kirim ERC-20 dari multi-sig wallet | Multi-token support |
+| ID | As a | I want to | So that |
+|----|------|-----------|---------|
+| US-01 | Owner | Deploy wallet with owner list and threshold | Wallet is ready to use |
+| US-02 | Owner | Submit a new transaction | Other owners can approve |
+| US-03 | Owner | Approve a transaction submitted by another owner | Transaction can be executed |
+| US-04 | Owner | Revoke my approval before execution | I can change my mind |
+| US-05 | Anyone | Execute a transaction with sufficient approvals | Funds are sent to the recipient |
+| US-06 | Owner | View all pending transactions | I know what needs approval |
+| US-07 | Anyone | View executed transaction history | There is an audit trail |
+| US-08 | Anyone | Deposit ETH to the wallet | Wallet has a balance |
+| US-09 | Owner | Submit a proposal to add/remove owner (requires threshold) | Access management |
+| US-10 | Owner | Submit a proposal to change threshold (requires threshold) | Governance flexibility |
+| US-11 | Owner | Send ERC-20 from multi-sig wallet | Multi-token support |
 
-### 3.2 MultiSigGovernor (Integrasi ChainNusa)
+### 3.2 MultiSigGovernor (ChainNusa Integration)
 
-| ID | Sebagai | Saya ingin | Sehingga |
-|----|---------|------------|----------|
-| US-12 | Team lead | Record analysis ke on-chain hanya via multi-sig approval | Tidak ada single point of authority |
-| US-13 | Team lead | Mint ReportSBT hanya via multi-sig approval | SBT benar-benar representasi tim, bukan individu |
-| US-14 | Team lead | Upgrade AnalysisRegistry ke versi baru via multi-sig | Deployment terkoordinasi |
+| ID | As a | I want to | So that |
+|----|------|-----------|---------|
+| US-12 | Team lead | Record analysis on-chain only via multi-sig approval | No single point of authority |
+| US-13 | Team lead | Mint ReportSBT only via multi-sig approval | SBT truly represents the team, not an individual |
+| US-14 | Team lead | Upgrade AnalysisRegistry to a new version via multi-sig | Coordinated deployment |
 
 ---
 
@@ -120,77 +120,77 @@ MultiSigWallet (standalone)
 
 #### FR-01: Deployment & Initialization
 
-- Contract menerima array `owners` dan nilai `required` (threshold) saat deploy
-- Validasi: `owners` tidak boleh kosong, tidak ada duplikat, tidak ada zero address
-- Validasi: `required` harus antara 1 dan panjang array `owners`
-- Event `WalletCreated(address[] owners, uint required)` di-emit saat deploy
-- Gunakan OpenZeppelin Ownable2Step untuk owner management contract sendiri (jika perlu upgrade path)
+- Contract receives `owners` array and `required` value (threshold) at deploy
+- Validation: `owners` must not be empty, no duplicates, no zero address
+- Validation: `required` must be between 1 and the length of `owners` array
+- Event `WalletCreated(address[] owners, uint required)` emitted at deploy
+- Use OpenZeppelin Ownable2Step for contract owner management (if upgrade path needed)
 
 #### FR-02: Submit Transaction
 
-- Owner dapat submit transaksi dengan parameter: `to`, `value`, `data`
-- Setiap transaksi mendapat `txIndex` unik yang auto-increment
-- Submitter otomatis menjadi approver pertama
+- Owner can submit a transaction with parameters: `to`, `value`, `data`
+- Each transaction receives a unique auto-increment `txIndex`
+- Submitter automatically becomes the first approver
 - Event `SubmitTransaction(address indexed owner, uint indexed txIndex, address indexed to, uint value, bytes data)`
 
 #### FR-03: Approve Transaction
 
-- Owner dapat approve transaksi berdasarkan `txIndex`
-- Satu owner hanya bisa approve sekali per transaksi
-- Tidak bisa approve transaksi yang sudah dieksekusi
+- Owner can approve a transaction by `txIndex`
+- One owner can only approve once per transaction
+- Cannot approve an already executed transaction
 - Event `ApproveTransaction(address indexed owner, uint indexed txIndex)`
 
 #### FR-04: Revoke Approval
 
-- Owner dapat revoke approval selama transaksi belum dieksekusi
+- Owner can revoke approval as long as the transaction has not been executed
 - Event `RevokeConfirmation(address indexed owner, uint indexed txIndex)`
 
 #### FR-05: Execute Transaction
 
-- Siapapun (bukan hanya owner) dapat trigger eksekusi jika approval count >= required
-- Eksekusi menggunakan low-level call untuk support arbitrary calldata
-- Jika eksekusi gagal (revert), transaksi tetap marked tidak dieksekusi (tidak atomic revert)
+- Anyone (not just an owner) can trigger execution if approval count >= required
+- Execution uses low-level call to support arbitrary calldata
+- If execution fails (reverts), the transaction remains marked as not executed (no atomic revert)
 - Event `ExecuteTransaction(address indexed owner, uint indexed txIndex)`
 
 #### FR-06: Deposit
 
-- Contract menerima ETH via receive() function
+- Contract accepts ETH via receive() function
 - Event `Deposit(address indexed sender, uint amount, uint balance)`
 
 #### FR-07: ERC-20 Transfer
 
-- MultiSigWallet dapat memegang dan mengirim ERC-20 token
-- Eksekusi via `IERC20.transfer()` dengan calldata encoded
+- MultiSigWallet can hold and send ERC-20 tokens
+- Execution via `IERC20.transfer()` with encoded calldata
 
 #### FR-08: Owner Management (via internal proposals)
 
-- Tambah owner: butuh threshold approval, di-encode sebagai proposal ke alamat contract sendiri
-- Hapus owner: sama, dengan validasi threshold tidak melebihi jumlah owner setelah penghapusan
-- Ganti threshold: sama, dengan validasi `newThreshold >= 1` dan `newThreshold <= ownerCount`
+- Add owner: requires threshold approval, encoded as a proposal to the contract's own address
+- Remove owner: same, with validation that threshold doesn't exceed owner count after removal
+- Change threshold: same, with validation `newThreshold >= 1` and `newThreshold <= ownerCount`
 
 ### 4.2 MultiSigGovernor — Features
 
-#### FR-09: Governance Wrapper untuk AnalysisRegistry
+#### FR-09: Governance Wrapper for AnalysisRegistry
 
-- `MultiSigGovernor` menjadi callee untuk `AnalysisRegistry.recordAnalysis()`
-- Function `proposeRecordAnalysis(cidBytes, chainId, indexedWallet)` → submit proposal ke MultiSigWallet
-- Hanya bisa di-eksekusi setelah cukup approval
+- `MultiSigGovernor` becomes the callee for `AnalysisRegistry.recordAnalysis()`
+- Function `proposeRecordAnalysis(cidBytes, chainId, indexedWallet)` → submits proposal to MultiSigWallet
+- Can only be executed after sufficient approvals
 
-#### FR-10: Governance Wrapper untuk ReportSBT
+#### FR-10: Governance Wrapper for ReportSBT
 
-- `MultiSigGovernor` menjadi callee untuk `ReportSBT.mint()`
-- Function `proposeMintSBT(to, analysisId, cidBytes)` → submit proposal ke MultiSigWallet
-- Hanya bisa di-eksekusi setelah cukup approval
+- `MultiSigGovernor` becomes the callee for `ReportSBT.mint()`
+- Function `proposeMintSBT(to, analysisId, cidBytes)` → submits proposal to MultiSigWallet
+- Can only be executed after sufficient approvals
 
 ### 4.3 View Functions (Read-Only, Gas-Free)
 
-- `getOwners()` → array semua owner aktif
-- `getTransactionCount()` → total jumlah transaksi
-- `getTransaction(txIndex)` → detail satu transaksi
+- `getOwners()` → array of all active owners
+- `getTransactionCount()` → total number of transactions
+- `getTransaction(txIndex)` → details of one transaction
 - `isOwner(address)` → boolean
 - `isConfirmed(txIndex, address)` → boolean
 - `getConfirmationCount(txIndex)` → uint
-- `getBalance()` → balance ETH contract
+- `getBalance()` → contract ETH balance
 
 ---
 
@@ -216,7 +216,7 @@ mapping(uint => mapping(address => bool)) public isConfirmed;
 
 struct Transaction {
     address to;       // 20 bytes
-    uint96 value;     // 12 bytes — packed dengan 'to' dalam 1 slot
+    uint96 value;     // 12 bytes — packed with 'to' in 1 slot
     bytes data;
     bool executed;
     uint numConfirmations;
@@ -325,29 +325,29 @@ pub struct TransactionState {
 
 ### 6.1 Access Control
 
-- Semua fungsi state-changing harus check `isOwner[msg.sender]`
-- Tidak ada admin key atau upgradeability — immutable by design
-- Owner tidak bisa approve transaksinya dua kali
-- MultiSigGovernor: hanya owner MultiSigWallet yang bisa submit proposal
+- All state-changing functions must check `isOwner[msg.sender]`
+- No admin key or upgradeability — immutable by design
+- Owner cannot approve their own transaction twice
+- MultiSigGovernor: only MultiSigWallet owners can submit proposals
 
 ### 6.2 Reentrancy Protection
 
-- Execute function menggunakan Checks-Effects-Interactions pattern
-- Set `transaction.executed = true` SEBELUM melakukan external call
-- Gunakan `ReentrancyGuard` dari OpenZeppelin sebagai defense in depth
+- Execute function uses Checks-Effects-Interactions pattern
+- Set `transaction.executed = true` BEFORE making external call
+- Use `ReentrancyGuard` from OpenZeppelin as defense in depth
 
 ### 6.3 Integer Safety
 
-- Gunakan Solidity ^0.8.24 — overflow protection built-in
-- Validasi `value` tidak melebihi `address(this).balance` sebelum eksekusi
+- Use Solidity ^0.8.24 — overflow protection built-in
+- Validate `value` does not exceed `address(this).balance` before execution
 
 ### 6.4 Audit Checklist
 
 - [ ] Slither static analysis — zero high/medium findings
 - [ ] Manual review: reentrancy, access control, integer overflow
-- [ ] Fuzz testing dengan forge test --fuzz-runs 10000
-- [ ] Invariant testing: `numConfirmations` tidak pernah melebihi jumlah owner
-- [ ] invariant: setelah remove owner, threshold tetap valid
+- [ ] Fuzz testing with forge test --fuzz-runs 10000
+- [ ] Invariant testing: `numConfirmations` never exceeds owner count
+- [ ] Invariant: after removing owner, threshold remains valid
 
 ---
 
@@ -429,19 +429,19 @@ describe("multisig", () => {
 
 ## 8. Gas Optimization
 
-| Teknik | Implementasi |
-|--------|-------------|
-| Custom errors | Ganti `require(cond, "string")` dengan `if (!cond) revert CustomError()` |
-| Immutable variables | `required` jika tidak berubah → `immutable` |
-| Struct packing | Pack `address` (20 bytes) dengan `uint96` (12 bytes) dalam 1 slot |
-| Mapping vs array | Gunakan mapping untuk O(1) lookup owner |
-| Calldata vs memory | Parameter fungsi external pakai `calldata` bukan `memory` |
-| Short-circuit | Check murah (owner check) sebelum check mahal |
+| Technique | Implementation |
+|-----------|---------------|
+| Custom errors | Replace `require(cond, "string")` with `if (!cond) revert CustomError()` |
+| Immutable variables | `required` if unchanged → `immutable` |
+| Struct packing | Pack `address` (20 bytes) with `uint96` (12 bytes) in 1 slot |
+| Mapping vs array | Use mapping for O(1) owner lookup |
+| Calldata vs memory | External function parameters use `calldata` not `memory` |
+| Short-circuit | Check cheap operation (owner check) before expensive one |
 
-**Gas benchmark target:**
+**Gas benchmark targets:**
 
-| Fungsi | Target max gas |
-|--------|---------------|
+| Function | Target max gas |
+|----------|---------------|
 | Deploy | 800,000 |
 | Submit | 80,000 |
 | Confirm | 50,000 |
@@ -452,34 +452,34 @@ describe("multisig", () => {
 
 ## 9. Frontend Requirements
 
-### 9.1 Pages (di dalam `apps/web/`)
+### 9.1 Pages (inside `apps/web/`)
 
 **Dashboard (`/wallet`)**
-- Tampilkan: wallet address, balance ETH, owner list, threshold
-- Tombol: Connect Wallet, Deposit, Submit New Transaction
-- Integrasi dengan existing `Analyzer` component di `page.tsx`
+- Display: wallet address, ETH balance, owner list, threshold
+- Buttons: Connect Wallet, Deposit, Submit New Transaction
+- Integration with existing `Analyzer` component in `page.tsx`
 
 **Transactions (`/wallet/transactions`)**
-- List semua transaksi (pending dan executed) dengan pagination
+- List all transactions (pending and executed) with pagination
 - Filter: All / Pending / Executed
-- Setiap card: to, value, approval progress bar, tombol approve/revoke/execute
+- Each card: to, value, approval progress bar, approve/revoke/execute buttons
 
 **Transaction Detail (`/wallet/transactions/[txIndex]`)**
-- Detail lengkap termasuk calldata
-- Daftar siapa yang sudah approve
-- Timeline eksekusi
+- Full details including calldata
+- List of who has approved
+- Execution timeline
 
 ### 9.2 Wallet Connection
 
-- Support MetaMask dan WalletConnect via RainbowKit
+- Support MetaMask and WalletConnect via RainbowKit
 - WAGMI hooks: `useReadContract`, `useWriteContract`, `useWatchContractEvent`
-- Auto-detect chain — warning jika bukan Arbitrum/Base
-- Handle wrong network dengan prompt switch
+- Auto-detect chain — warn if not Arbitrum/Base
+- Handle wrong network with switch prompt
 
 ### 9.3 Real-time Updates
 
-- Watch `ConfirmTransaction` dan `ExecuteTransaction` events
-- Update approval count dan status tanpa refresh manual
+- Watch `ConfirmTransaction` and `ExecuteTransaction` events
+- Update approval count and status without manual refresh
 
 ---
 
@@ -488,13 +488,13 @@ describe("multisig", () => {
 ### 10.1 EVM Deployment Steps
 
 ```bash
-# 1. Test lokal
+# 1. Local test
 forge test -vvv
 
 # 2. Coverage check
 forge coverage --report lcov
 
-# 3. Deploy ke testnet
+# 3. Deploy to testnet
 forge create src/multisig/MultiSigWallet.sol:MultiSigWallet \
   --constructor-args "[0xOwner1, 0xOwner2, 0xOwner3]" 2 \
   --rpc-url arbitrum_sepolia \
@@ -509,11 +509,11 @@ forge create src/governance/MultiSigGovernor.sol:MultiSigGovernor \
   --private-key $PRIVATE_KEY \
   --verify
 
-# 5. Transfer ownership existing contracts ke MultiSigGovernor
+# 5. Transfer ownership of existing contracts to MultiSigGovernor
 #   AnalysisRegistry.transferOwnership(governorAddress)
 #   ReportSBT.transferOwnership(governorAddress)
 
-# 6. Deploy mainnet (setelah audit)
+# 6. Deploy to mainnet (after audit)
 ```
 
 ### 10.2 Solana Deployment Steps
@@ -528,7 +528,7 @@ anchor deploy --provider.cluster mainnet-beta
 ### 10.3 Frontend Deployment
 
 ```bash
-# Existing Next.js app — tambahkan halaman wallet
+# Existing Next.js app — add wallet pages
 pnpm web:dev
 pnpm web:build
 vercel deploy --prod
@@ -538,33 +538,33 @@ vercel deploy --prod
 
 ## 11. Milestones & Timeline
 
-| Milestone | Deliverable | Estimasi |
+| Milestone | Deliverable | Estimate |
 |-----------|-------------|----------|
-| M1 | MultiSigWallet.sol + unit tests (forge) | Minggu 1 |
-| M2 | Integration tests + fuzz tests | Minggu 1-2 |
-| M3 | MultiSigGovernor.sol + tests | Minggu 2 |
-| M4 | Deploy ke Arbitrum Sepolia + verified | Minggu 2 |
-| M5 | Next.js UI (read + write + events) | Minggu 2-3 |
-| M6 | Frontend deploy ke Vercel | Minggu 3 |
-| M7 | Slither audit + gas optimization | Minggu 3-4 |
-| M8 | Rust/Anchor implementation (Solana) | Minggu 5-6 |
-| M9 | Deploy mainnet (EVM) + final docs | Setelah M7 |
+| M1 | MultiSigWallet.sol + unit tests (forge) | Week 1 |
+| M2 | Integration tests + fuzz tests | Week 1-2 |
+| M3 | MultiSigGovernor.sol + tests | Week 2 |
+| M4 | Deploy to Arbitrum Sepolia + verified | Week 2 |
+| M5 | Next.js UI (read + write + events) | Week 2-3 |
+| M6 | Frontend deploy to Vercel | Week 3 |
+| M7 | Slither audit + gas optimization | Week 3-4 |
+| M8 | Rust/Anchor implementation (Solana) | Week 5-6 |
+| M9 | Deploy mainnet (EVM) + final docs | After M7 |
 
 ---
 
 ## 12. Definition of Done
 
-Contract dianggap production-ready jika:
+Contract is considered production-ready if:
 
-- [ ] Semua unit dan integration test pass
+- [ ] All unit and integration tests pass
 - [ ] forge coverage ≥ 95%
-- [ ] Slither — zero high severity finding
-- [ ] Contract verified di Arbiscan/Basescan
-- [ ] Gas usage dalam target benchmark
-- [ ] Frontend live di Vercel dengan domain custom
-- [ ] MultiSigGovernor terintegrasi dengan AnalysisRegistry & ReportSBT
-- [ ] README lengkap: arsitektur modular, cara deploy, cara test, cara upgrade
-- [ ] NatSpec documentation di semua fungsi public
+- [ ] Slither — zero high severity findings
+- [ ] Contract verified on Arbiscan/Basescan
+- [ ] Gas usage within benchmark targets
+- [ ] Frontend live on Vercel with custom domain
+- [ ] MultiSigGovernor integrated with AnalysisRegistry & ReportSBT
+- [ ] Complete README: modular architecture, how to deploy, how to test, how to upgrade
+- [ ] NatSpec documentation on all public functions
 
 ---
 
@@ -576,5 +576,5 @@ Contract dianggap production-ready jika:
 - [wagmi docs](https://wagmi.sh)
 - [RainbowKit](https://www.rainbowkit.com)
 - [OpenZeppelin Contracts](https://docs.openzeppelin.com/contracts)
-- [Gnosis Safe](https://github.com/safe-global/safe-contracts) — referensi implementasi production
+- [Gnosis Safe](https://github.com/safe-global/safe-contracts) — production implementation reference
 - [Slither](https://github.com/crytic/slither) — static analyzer

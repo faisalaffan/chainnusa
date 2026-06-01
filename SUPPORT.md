@@ -2,33 +2,33 @@
 
 ## Documentation
 
-- [README.md](./README.md) — overview, fitur, setup
-- [CLAUDE.md](./CLAUDE.md) — perintah development, arsitektur
+- [README.md](./README.md) — overview, features, setup
+- [CLAUDE.md](./CLAUDE.md) — development commands, architecture
 - [docs/prd/](./docs/prd/) — product requirement documents
 - [docs/superpowers/plans/](./docs/superpowers/plans/) — implementation plans
 
 ## Getting Help
 
-### Bug atau Fitur Request
+### Bug or Feature Request
 
-Buka [GitHub Issue](https://github.com/faisalaffan/chainnusa/issues) dan pilih template yang sesuai.
+Open a [GitHub Issue](https://github.com/faisalaffan/chainnusa/issues) and select the appropriate template.
 
-### Pertanyaan
+### Questions
 
 - GitHub Discussions (coming soon)
 - Email: faisalaffan@proton.me
 
 ### Security Vulnerability
 
-Jangan buka issue publik. Lihat [SECURITY.md](./SECURITY.md) untuk prosedur pelaporan.
+Do not open a public issue. See [SECURITY.md](./SECURITY.md) for reporting procedures.
 
 ## Self-Hosted Setup
 
-Untuk bantuan self-hosted deployment (Ollama + Docker), lihat [README.md](./README.md) bagian "Self-Hosted" dan `docker-compose.yml`.
+For self-hosted deployment help (Ollama + Docker), see [README.md](./README.md) "Self-Hosted" section and `docker-compose.yml`.
 
 ## Provider Configuration
 
-| Mode | Data | LLM | Dijelaskan di |
+| Mode | Data | LLM | Documented in |
 |------|------|-----|---------------|
 | Hosted | Etherscan V2 | Claude | README |
 | Hybrid A | Etherscan V2 | Ollama | README |

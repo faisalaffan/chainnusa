@@ -1,6 +1,6 @@
 ## Summary
 
-<!-- 1-3 bullet point menjelaskan perubahan -->
+<!-- 1-3 bullet points explaining the changes -->
 
 ## Related Issue
 
@@ -16,21 +16,21 @@
 
 ## Test Plan
 
-<!-- Checklist: apa yang sudah di-test -->
+<!-- Checklist: what has been tested -->
 
 - [ ] `pnpm web:typecheck`
-- [ ] `pnpm contracts:test` (jika ada perubahan kontrak)
-- [ ] `pnpm ml:test` (jika ada perubahan ML service)
-- [ ] `forge coverage` — ≥95% line coverage (kontrak)
-- [ ] Manual test di browser
+- [ ] `pnpm contracts:test` (if contract changes)
+- [ ] `pnpm ml:test` (if ML service changes)
+- [ ] `forge coverage` — ≥95% line coverage (contracts)
+- [ ] Manual test in browser
 
 ## Screenshots
 
-<!-- Jika ada perubahan UI, lampirkan screenshot -->
+<!-- If UI changes, attach screenshots -->
 
 ## Checklist
 
-- [ ] Commit mengikuti Conventional Commits
-- [ ] Tidak ada debug log atau console.log tertinggal
-- [ ] Test ditambahkan untuk fitur baru
-- [ ] Dokumentasi di-update jika perlu
+- [ ] Commit follows Conventional Commits
+- [ ] No debug logs or console.log left behind
+- [ ] Tests added for new features
+- [ ] Documentation updated if needed

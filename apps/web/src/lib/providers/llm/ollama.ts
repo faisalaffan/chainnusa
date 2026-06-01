@@ -55,6 +55,6 @@ export class OllamaProvider implements LlmProvider {
       );
     }
 
-    return text.trim() || "_Tidak ada output dari model._";
+    return text.trim() || "_No output received from model._";
   }
 }

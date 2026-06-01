@@ -1,6 +1,6 @@
 # Acknowledgments
 
-ChainNusa dibangun di atas proyek dan library berikut:
+ChainNusa is built on top of the following projects and libraries:
 
 ## Blockchain & Smart Contracts
 
@@ -31,4 +31,4 @@ ChainNusa dibangun di atas proyek dan library berikut:
 
 ---
 
-Project ini adalah skripsi dan portfolio work oleh Muhammad Faisal Affan.
+This project is a thesis and portfolio work by Muhammad Faisal Affan.

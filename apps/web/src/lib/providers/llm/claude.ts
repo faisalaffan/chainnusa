@@ -41,6 +41,6 @@ export class ClaudeProvider implements LlmProvider {
       payload: JSON.stringify(buildPromptPayload(analysis), null, 2),
     });
 
-    return text.trim() || "_Tidak ada output dari model._";
+    return text.trim() || "_No output received from model._";
   }
 }

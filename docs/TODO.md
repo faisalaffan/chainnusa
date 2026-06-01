@@ -1,22 +1,22 @@
 # TODO — ChainNusa Gap Implementation
 
-Status terakhir: 2026-05-09. Scaffolding 90% selesai, **belum ada training model nyata** dan **belum deploy contract**.
+Last updated: 2026-05-09. Scaffolding ~90% complete, **no real model training yet** and **no contract deployment**.
 
 ---
 
-## Prioritas (urutan eksekusi)
+## Priorities (execution order)
 
-### Step 1 — Dapatkan Dataset Wallet Nyata
+### Step 1 — Get Real Wallet Dataset
 
-Butuh Etherscan API key (gratis). Tanpa ini tidak bisa lanjut training.
+Need an Etherscan API key (free). Without this, training cannot proceed.
 
 ```bash
-# 1. Daftar di https://etherscan.io/myapikey (gratis)
-# 2. Set di .env:
+# 1. Sign up at https://etherscan.io/myapikey (free)
+# 2. Set in .env:
 ETHERSCAN_API_KEY=your_key_here
 DATA_PROVIDER=etherscan
 
-# 3. Ambil data wallet
+# 3. Fetch wallet data
 cd ml-service
 pip install -e ".[dev]"
 python -c "
@@ -25,21 +25,21 @@ from app.etl.extract import ChainDataExtractor
 
 extractor = ChainDataExtractor(api_key='your_key')
 async def main():
-    # ambil data 50 wallet (label dari Etherscan tags)
+    # fetch data for 50 wallets (labels from Etherscan tags)
     data = await extractor.extract(1, '0x...', max_txs=500)
     print(f'Txs: {len(data.normal_txs)}, Token txs: {len(data.token_txs)}')
 asyncio.run(main())
 "
 ```
 
-Target: kumpulkan data **minimal 500 wallet** (exchange, trader, bot, normal).
+Target: collect data for **at least 500 wallets** (exchange, trader, bot, normal).
 
-### Step 2 — Train di vast.ai GPU
+### Step 2 — Train on vast.ai GPU
 
-Pilih instance dengan **RTX 3090/4090**, RAM 16GB+, storage 50GB+.
+Choose an instance with **RTX 3090/4090**, 16GB+ RAM, 50GB+ storage.
 
 ```bash
-# SSH ke vast.ai instance
+# SSH to vast.ai instance
 ssh -p <port> root@<ip>
 
 # Setup environment
@@ -53,13 +53,13 @@ cd chainnusa/ml-service
 # Install deps
 pip install -e ".[dev,nlp,viz]"
 
-# Upload dataset kamu (scp atau rsync dari laptop)
+# Upload your dataset (scp or rsync from laptop)
 # scp -P <port> dataset/*.parquet root@<ip>:~/chainnusa/ml-service/data/
 
-# Jalankan training satu per satu:
+# Run training one by one:
 ```
 
-#### 2a. Wallet Classifier (RF + XGBoost) — 5 menit
+#### 2a. Wallet Classifier (RF + XGBoost) — 5 minutes
 
 ```bash
 cd ml-service
@@ -86,7 +86,7 @@ print('Saved to models/wallet_clf.pkl')
 "
 ```
 
-#### 2b. Anomaly Detector — 2 menit
+#### 2b. Anomaly Detector — 2 minutes
 
 ```bash
 python -c "
@@ -101,14 +101,14 @@ det.save('models/anomaly_detector.pkl')
 "
 ```
 
-#### 2c. LSTM Sequence Anomaly — ~30 menit CPU, ~3 menit GPU
+#### 2c. LSTM Sequence Anomaly — ~30 min CPU, ~3 min GPU
 
 ```bash
 python -c "
 import pandas as pd
 from app.models.lstm import LstmAnomalyDetector
 
-# Butuh sequence data — dari ETL pipeline yang sudah jalan
+# Requires sequence data — from ETL pipeline that has already run
 df = pd.read_parquet('data/processed/v1/wallet_features_with_seq.parquet')
 
 lstm = LstmAnomalyDetector(seq_len=64, input_dim=3, hidden_dim=64)
@@ -125,40 +125,40 @@ lstm.save('models/lstm_anomaly')
 "
 ```
 
-#### 2d. Configuring Checkpoint
+#### 2d. Checkpoint Configuration
 
 ```bash
-# Setelah semua model di-save ke models/:
-# Salin ke MinIO (via infra MLflow):
-# Atau simpan lokal dulu untuk development:
+# After all models are saved to models/:
+# Copy to MinIO (via infra MLflow):
+# Or save locally first for development:
 mkdir -p ~/chainnusa/ml-service/models/
-# Download dari vast.ai dengan scp
+# Download from vast.ai with scp
 ```
 
-### Step 3 — Setup MLflow + MinIO (lokal)
+### Step 3 — Setup MLflow + MinIO (local)
 
 ```bash
-# Dari laptop:
+# From laptop:
 cd infra
 docker compose up -d postgres minio mlflow
 
-# Akses:
+# Access:
 # MLflow UI: http://localhost:5000
 # MinIO Console: http://localhost:9001 (minioadmin / minioadmin)
 
-# Registrasi model ke MLflow registry dari script training
+# Register models to MLflow registry from training scripts
 ```
 
-### Step 4 — Jalankan Notebook untuk EDA + Documentation
+### Step 4 — Run Notebooks for EDA + Documentation
 
 ```bash
 cd ml-service
 jupyter notebook notebooks/
-# Buka 00_eda.ipynb → sesuaikan path dataset → run semua cell
-# Ulangi untuk 02_supervised, 03_unsupervised, 05_statistics, 06_timeseries
+# Open 00_eda.ipynb → adjust dataset path → run all cells
+# Repeat for 02_supervised, 03_unsupervised, 05_statistics, 06_timeseries
 ```
 
-### Step 5 — Deploy Smart Contract ke Testnet
+### Step 5 — Deploy Smart Contract to Testnet
 
 ```bash
 cd contracts
@@ -173,21 +173,21 @@ forge install OpenZeppelin/openzeppelin-contracts@v5.0.0 --no-commit
 # Test
 forge test -vv
 
-# Deploy ke Sepolia
+# Deploy to Sepolia
 export DEPLOYER_PRIVATE_KEY=your_key
 export SEPOLIA_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
 export ETHERSCAN_API_KEY=your_key
 forge script script/Deploy.s.sol --rpc-url sepolia --broadcast --verify
 ```
 
-### Step 6 — Integrasi wagmi + RainbowKit ke UI
+### Step 6 — Integrate wagmi + RainbowKit into UI
 
 ```bash
 cd apps/web
 pnpm add wagmi @wagmi/core @wagmi/connectors @rainbow-me/rainbowkit viem
 ```
 
-Bikin component `WalletProvider` yang wrap RainbowKit, dan tombol "Connect" + "Mint Proof" di `Analyzer.tsx`.
+Create a `WalletProvider` component wrapping RainbowKit, and "Connect" + "Mint Proof" buttons in `Analyzer.tsx`.
 
 ### Step 7 — IPFS Pin
 
@@ -196,7 +196,7 @@ cd apps/web
 pnpm add @pinata/sdk
 ```
 
-Flow: POST `/api/analyze` → pilih "Mint proof" → pin JSON hasil analisis ke Pinata → dapat CID → call `AnalysisRegistry.recordAnalysis()` via wagmi.
+Flow: POST `/api/analyze` → choose "Mint proof" → pin analysis result JSON to Pinata → get CID → call `AnalysisRegistry.recordAnalysis()` via wagmi.
 
 ### Step 8 — Chainlink Price Feed
 
@@ -205,32 +205,32 @@ cd apps/web
 pnpm add @chainlink/contracts
 ```
 
-Konversi `gasSpent` ke USD pakai `AggregatorV3Interface(priceFeedAddress).latestRoundData()`.
+Convert `gasSpent` to USD using `AggregatorV3Interface(priceFeedAddress).latestRoundData()`.
 
 ---
 
-## Checklist Ringkas
+## Quick Checklist
 
-| # | Task | Lokasi | Estimasi |
+| # | Task | Location | Estimate |
 |---|---|---|---|
-| 1 | Kumpulkan dataset 500+ wallet | Laptop + Etherscan | 2-3 jam |
-| 2 | Train classifier (RF+XGBoost) | vast.ai GPU | 5 menit |
-| 3 | Train anomaly detector | vast.ai GPU | 2 menit |
-| 4 | Train LSTM model | vast.ai GPU | 3 menit |
-| 5 | Run semua notebook | vast.ai / laptop | 2 jam |
-| 6 | Setup MLflow + registrasi model | Laptop | 30 menit |
-| 7 | Deploy contract ke Sepolia | Laptop | 15 menit |
-| 8 | wagmi + RainbowKit UI | apps/web | 2 jam |
-| 9 | IPFS pin flow | apps/web | 1 jam |
-| 10 | Chainlink price feed | apps/web + contracts | 1 jam |
-| 11 | E2E Playwright tests | apps/web | 1.5 jam |
-| 12 | Gitleaks + dependency audit CI | .github/workflows | 30 menit |
+| 1 | Collect 500+ wallet dataset | Laptop + Etherscan | 2-3 hours |
+| 2 | Train classifier (RF+XGBoost) | vast.ai GPU | 5 min |
+| 3 | Train anomaly detector | vast.ai GPU | 2 min |
+| 4 | Train LSTM model | vast.ai GPU | 3 min |
+| 5 | Run all notebooks | vast.ai / laptop | 2 hours |
+| 6 | Setup MLflow + register models | Laptop | 30 min |
+| 7 | Deploy contract to Sepolia | Laptop | 15 min |
+| 8 | wagmi + RainbowKit UI | apps/web | 2 hours |
+| 9 | IPFS pin flow | apps/web | 1 hour |
+| 10 | Chainlink price feed | apps/web + contracts | 1 hour |
+| 11 | E2E Playwright tests | apps/web | 1.5 hours |
+| 12 | Gitleaks + dependency audit CI | .github/workflows | 30 min |
 
 ---
 
-## Catatan
+## Notes
 
-- **vast.ai instance**: pilih `RTX 3090` / `RTX 4090` dengan `cuda:12.x`, bid rendah (~$0.20-0.40/jam), storage 50GB+, image `pytorch/pytorch:latest`
-- Model artifact (.pkl, .pt) harus di-upload kembali ke repo atau MinIO
-- Jangan commit `.pkl`, `.pt`, atau `.db` ke git — sudah ada di `.gitignore`
-- Semua training script bisa dijalankan via `python -c "..."` atau sebagai standalone script
+- **vast.ai instance**: choose `RTX 3090` / `RTX 4090` with `cuda:12.x`, low bid (~$0.20-0.40/hour), 50GB+ storage, image `pytorch/pytorch:latest`
+- Model artifacts (.pkl, .pt) must be uploaded back to repo or MinIO
+- Do not commit `.pkl`, `.pt`, or `.db` to git — already in `.gitignore`
+- All training scripts can be run via `python -c "..."` or as standalone scripts

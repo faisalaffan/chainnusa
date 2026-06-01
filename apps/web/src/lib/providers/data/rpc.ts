@@ -230,9 +230,9 @@ export class RpcProvider implements DataProvider {
       nativeBalance: true,
     },
     notes: [
-      "Tidak butuh API key — pakai public RPC",
-      "Native tx history TIDAK tersedia (limitasi JSON-RPC)",
-      "ERC-20 transfers di-fetch dari N blok terakhir via eth_getLogs",
+      "No API key needed — uses public RPC endpoints",
+      "Native tx history NOT available (JSON-RPC limitation)",
+      "ERC-20 transfers fetched from last N blocks via eth_getLogs",
     ],
   };
 

@@ -17,7 +17,7 @@ import { categoryColor, categoryLabel } from "@/lib/format";
 
 export function ActivityChart({ data }: { data: AnalysisResult["dailyActivity"] }) {
   if (!data.length) {
-    return <p className="text-sm text-white/50">Tidak ada data aktivitas harian.</p>;
+    return <p className="text-sm text-white/50">No daily activity data available.</p>;
   }
   const trimmed = data.slice(-60);
   return (
