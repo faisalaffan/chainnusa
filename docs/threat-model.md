@@ -1,62 +1,62 @@
 # Threat Model — ChainNusa
 
-## Scope
+## Cakupan
 
-Threat model focused on 3 layers:
+Threat model berfokus pada 3 lapisan:
 1. **Web app** (Next.js) — frontend + API.
 2. **ML service** (FastAPI) — internal-only.
-3. **Smart contracts** (Solidity) — public, on-chain.
+3. **Smart contracts** (Solidity) — publik, on-chain.
 
-## STRIDE per component
+## STRIDE per komponen
 
 ### 1. Web app (`apps/web`)
 
-| Threat | Vector | Mitigation |
+| Threat | Vector | Mitigasi |
 |---|---|---|
-| **Spoofing** | Fake sign-in | SIWE (EIP-4361): server verifies signature server-side, single-use nonce, 5-minute expiry |
-| **Tampering** | Forging analysis result client-side | Server-side validation; cache key = chainId+address+payload hash |
-| **Repudiation** | User claims they never triggered analysis | Audit log in Postgres `analysis_runs` table; on-chain proof via SBT |
-| **Info disclosure** | Leaked API keys (Etherscan/Anthropic) | Env vars server-only; never sent to client; ESLint rule against `process.env.ETHERSCAN_API_KEY` in `client` files |
-| **DoS** | Brute-force `/api/analyze` | Rate limit per IP via middleware (Upstash or in-memory token bucket); 1h cache TTL avoids re-fetch |
-| **Elevation of privilege** | XSS via AI summary | `MarkdownLite` (whitelist MD subset); React auto-escape; no `dangerouslySetInnerHTML` |
+| **Spoofing** | Login palsu | SIWE (EIP-4361): server memverifikasi tanda tangan di sisi server, nonce sekali pakai, kedaluwarsa 5 menit |
+| **Tampering** | Memalsukan hasil analisis di sisi client | Validasi server-side; cache key = chainId+address+hash payload |
+| **Repudiation** | User mengaku tidak pernah memicu analisis | Audit log di tabel Postgres `analysis_runs`; bukti on-chain via SBT |
+| **Info disclosure** | Bocornya API key (Etherscan/Anthropic) | Env vars hanya di server; tidak pernah dikirim ke client; aturan ESLint terhadap `process.env.ETHERSCAN_API_KEY` di file `client` |
+| **DoS** | Brute-force `/api/analyze` | Rate limit per IP via middleware (Upstash atau in-memory token bucket); cache TTL 1 jam menghindari pengambilan ulang |
+| **Elevation of privilege** | XSS melalui ringkasan AI | `MarkdownLite` (subset MD whitelist); React auto-escape; tanpa `dangerouslySetInnerHTML` |
 
 ### 2. ML service (`ml-service`)
 
-| Threat | Vector | Mitigation |
+| Threat | Vector | Mitigasi |
 |---|---|---|
-| **Spoofing** | Web pretends to be internal call | Internal-only network (docker-compose); shared secret header `X-Internal-Token` |
-| **Tampering** | Adversarial input to fool classifier | Input validation: Pydantic schema, range check; SHAP audit |
-| **Info disclosure** | Model artifact contains PII | No PII in feature space (only public on-chain addresses); models in private MLflow registry |
-| **DoS** | Heavy `/predict` request flood | Concurrency limit (uvicorn workers + asyncio semaphore); circuit breaker |
-| **Model poisoning** | Attacker uploads bad training data via DVC | DVC remote = MinIO with auth; only admin can promote to model registry |
+| **Spoofing** | Web berpura-pura sebagai panggilan internal | Jaringan internal-only (docker-compose); shared secret header `X-Internal-Token` |
+| **Tampering** | Input adversarial untuk menipu classifier | Validasi input: skema Pydantic, pemeriksaan rentang; audit SHAP |
+| **Info disclosure** | Artifact model mengandung PII | Tidak ada PII di ruang fitur (hanya alamat on-chain publik); model di registry MLflow privat |
+| **DoS** | Banjir request berat `/predict` | Batas konkurensi (uvicorn workers + asyncio semaphore); circuit breaker |
+| **Model poisoning** | Penyerang mengunggah data training berbahaya via DVC | Remote DVC = MinIO dengan auth; hanya admin yang dapat mempromosikan ke model registry |
 
 ### 3. Smart contracts (`contracts`)
 
-| Threat | Vector | Mitigation |
+| Threat | Vector | Mitigasi |
 |---|---|---|
-| **Reentrancy** | Calling external contract before state update | OpenZeppelin `ReentrancyGuard`; checks-effects-interactions pattern |
-| **Access control** | Unauthorized mint of SBT | `OwnerOnly` modifier; multi-sig owner in production |
+| **Reentrancy** | Memanggil kontrak eksternal sebelum update state | OpenZeppelin `ReentrancyGuard`; pola checks-effects-interactions |
+| **Access control** | Mint SBT tidak sah | Modifier `OwnerOnly`; multi-sig owner di produksi |
 | **Integer overflow** | Solidity <0.8 | Solidity 0.8.x default checked math |
-| **Gas griefing** | DoS via revert in callback | Gas budget caps; pull-payment pattern |
-| **Front-running** | MEV bot copies tx | No financial action (`recordAnalysis` only emits event) — low MEV surface |
-| **Oracle manipulation** | Stale Chainlink price | Check `updatedAt` timestamp; reject if > 1 hour old |
-| **Soulbound bypass** | Override transfer hook missed | Test `_update`/`safeTransferFrom` should revert; fuzz invariant tests |
+| **Gas griefing** | DoS melalui revert di callback | Batas anggaran gas; pola pull-payment |
+| **Front-running** | MEV bot menyalin tx | Tidak ada aksi finansial (`recordAnalysis` hanya memancarkan event) — permukaan MEV rendah |
+| **Oracle manipulation** | Harga Chainlink basi | Periksa timestamp `updatedAt`; tolak jika > 1 jam |
+| **Bypass Soulbound** | Override transfer hook terlewat | Test `_update`/`safeTransferFrom` harus revert; fuzz invariant test |
 
-## Security tooling in CI
+## Security tooling di CI
 
-- **Slither** (static analysis for Solidity) — fail on high severity.
-- **Mythril** (symbolic execution, optional, slower) — in nightly job.
-- **gitleaks** (secret scanning) — fail if API key leaked.
-- **pip-audit** + **npm audit** — dependency CVE check.
-- **forge test --gas-report** — guard against gas usage regression.
+- **Slither** (analisis statis untuk Solidity) — gagal pada severity tinggi.
+- **Mythril** (symbolic execution, opsional, lebih lambat) — di job nightly.
+- **gitleaks** (secret scanning) — gagal jika API key bocor.
+- **pip-audit** + **npm audit** — pemeriksaan CVE dependensi.
+- **forge test --gas-report** — perlindungan terhadap regresi penggunaan gas.
 
-## Out-of-scope (intentional)
+## Di luar cakupan (disengaja)
 
-- L1 consensus security (assumption: chain is valid).
-- Phishing of user UI (UI is internal demo).
-- Browser wallet vulnerabilities (assumption: MetaMask trusted).
-- Quantum-resistant crypto (assumption: ECDSA secure within project horizon).
+- Keamanan konsensus L1 (asumsi: chain valid).
+- Phishing UI pengguna (UI adalah demo internal).
+- Kerentanan browser wallet (asumsi: MetaMask terpercaya).
+- Kripto tahan-kuantum (asumsi: ECDSA aman dalam horizon proyek).
 
-## Disclosure policy
+## Kebijakan pengungkapan
 
-Bug report → email maintainer (placeholder: `security@chainnusa.example`). Public disclosure 90 days after patch or coordinated disclosure.
+Laporan bug → email maintainer (placeholder: `security@chainnusa.example`). Pengungkapan publik 90 hari setelah patch atau pengungkapan terkoordinasi.

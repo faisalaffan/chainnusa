@@ -1,58 +1,58 @@
-# Multi-Sig Wallet — Implementation Plan (M1–M4)
+# Multi-Sig Wallet — Rencana Implementasi (M1–M4)
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Untuk pekerja agenik:** SUB-SKILL WAJIB: Gunakan superpowers:subagent-driven-development (disarankan) atau superpowers:executing-plans untuk mengimplementasikan rencana ini tugas-per-tugas. Langkah-langkah menggunakan sintaks checkbox (`- [ ]`) untuk pelacakan.
 
-**Goal:** Implement modular multi-sig wallet contracts (MultiSigWallet + MultiSigGovernor) with full test coverage, deploy to Arbitrum Sepolia testnet.
+**Tujuan:** Implementasi kontrak multi-sig wallet modular (MultiSigWallet + MultiSigGovernor) dengan cakupan test penuh, deploy ke Arbitrum Sepolia testnet.
 
-**Architecture:** Modular Approach B — `MultiSigWallet.sol` (standalone N-of-M wallet: submit/approve/revoke/execute ETH + ERC-20 + generic calls) ditambah `MultiSigGovernor.sol` (adapter yang menghubungkan multi-sig ke existing `AnalysisRegistry.sol` dan `ReportSBT.sol`). Keduanya menggunakan OpenZeppelin Contracts (Ownable2Step, ReentrancyGuard).
+**Arsitektur:** Modular Pendekatan B — `MultiSigWallet.sol` (wallet N-of-M mandiri: submit/approve/revoke/execute ETH + ERC-20 + panggilan generik) ditambah `MultiSigGovernor.sol` (adaptor yang menghubungkan multi-sig ke `AnalysisRegistry.sol` dan `ReportSBT.sol` yang sudah ada). Keduanya menggunakan OpenZeppelin Contracts (Ownable2Step, ReentrancyGuard).
 
 **Tech Stack:** Solidity ^0.8.24, Foundry, OpenZeppelin Contracts, forge-std
 
-**Prerequisites:** `contracts/` sudah ter-setup dengan Foundry + OpenZeppelin via remappings. Existing `AnalysisRegistry.sol` dan `ReportSBT.sol` sudah ada dan berfungsi.
+**Prasyarat:** `contracts/` sudah ter-setup dengan Foundry + OpenZeppelin via remappings. `AnalysisRegistry.sol` dan `ReportSBT.sol` yang sudah ada dan berfungsi.
 
-**Scope:** Task 1–13 = M1 (MultiSigWallet + unit tests), Task 14–20 = M2 (integration + fuzz), Task 21–28 = M3 (MultiSigGovernor + tests), Task 29–33 = M4 (deploy script + testnet). Frontend (M5) dan Solana (M8) adalah follow-up plan terpisah.
+**Lingkup:** Task 1–13 = M1 (MultiSigWallet + unit test), Task 14–20 = M2 (integration + fuzz), Task 21–28 = M3 (MultiSigGovernor + test), Task 29–33 = M4 (deploy script + testnet). Frontend (M5) dan Solana (M8) adalah rencana lanjutan terpisah.
 
 ---
 
-## File Structure
+## Struktur File
 
 ```
 contracts/
 ├── src/
 │   ├── multisig/
-│   │   └── MultiSigWallet.sol     # CREATE — core N-of-M wallet
+│   │   └── MultiSigWallet.sol     # BUAT — wallet N-of-M inti
 │   ├── governance/
-│   │   └── MultiSigGovernor.sol   # CREATE — adapter to existing contracts
-│   ├── AnalysisRegistry.sol       # EXISTING — no changes
-│   └── ReportSBT.sol              # EXISTING — no changes
+│   │   └── MultiSigGovernor.sol   # BUAT — adaptor ke kontrak existing
+│   ├── AnalysisRegistry.sol       # SUDAH ADA — tidak ada perubahan
+│   └── ReportSBT.sol              # SUDAH ADA — tidak ada perubahan
 ├── test/
 │   ├── multisig/
-│   │   ├── MultiSigWallet.t.sol       # CREATE — unit tests
-│   │   └── MultiSigWallet.fuzz.t.sol  # CREATE — fuzz tests
+│   │   ├── MultiSigWallet.t.sol       # BUAT — unit test
+│   │   └── MultiSigWallet.fuzz.t.sol  # BUAT — fuzz test
 │   ├── governance/
-│   │   ├── MultiSigGovernor.t.sol     # CREATE — unit tests
-│   │   └── MultiSigGovernor.integration.t.sol  # CREATE — integration tests
-│   ├── AnalysisRegistry.t.sol     # EXISTING — no changes
-│   └── ReportSBT.t.sol            # EXISTING — no changes
+│   │   ├── MultiSigGovernor.t.sol     # BUAT — unit test
+│   │   └── MultiSigGovernor.integration.t.sol  # BUAT — integration test
+│   ├── AnalysisRegistry.t.sol     # SUDAH ADA — tidak ada perubahan
+│   └── ReportSBT.t.sol            # SUDAH ADA — tidak ada perubahan
 └── script/
-    └── DeployMultiSig.s.sol       # CREATE — deploy script
+    └── DeployMultiSig.s.sol       # BUAT — deploy script
 ```
 
 ---
 
-### Task 1: Create multi-sig directory and test scaffolding
+### Task 1: Buat direktori multi-sig dan scaffolding test
 
-**Files:**
-- Create: `contracts/src/multisig/MultiSigWallet.sol` (empty scaffolding)
-- Create: `contracts/test/multisig/MultiSigWallet.t.sol` (test scaffolding)
+**File:**
+- Buat: `contracts/src/multisig/MultiSigWallet.sol` (scaffolding kosong)
+- Buat: `contracts/test/multisig/MultiSigWallet.t.sol` (scaffolding test)
 
-- [ ] **Step 1: Create directory structure**
+- [ ] **Langkah 1: Buat struktur direktori**
 
 ```bash
 mkdir -p contracts/src/multisig contracts/test/multisig
 ```
 
-- [ ] **Step 2: Write empty contract with NatSpec and errors (no logic yet)**
+- [ ] **Langkah 2: Tulis kontrak kosong dengan NatSpec dan errors (belum ada logika)**
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -60,8 +60,8 @@ pragma solidity ^0.8.24;
 
 /**
  * @title MultiSigWallet
- * @notice N-of-M multi-signature wallet. Requires `required` out of `owners` approvals
- *         before a transaction can be executed.
+ * @notice N-of-M multi-signature wallet. Membutuhkan `required` dari `owners` persetujuan
+ *         sebelum sebuah transaksi dapat dieksekusi.
  */
 contract MultiSigWallet {
     error NotOwner();
@@ -80,7 +80,7 @@ contract MultiSigWallet {
 
 File: `contracts/src/multisig/MultiSigWallet.sol`
 
-- [ ] **Step 3: Write test file with setUp and first failing test**
+- [ ] **Langkah 3: Tulis file test dengan setUp dan test gagal pertama**
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -109,15 +109,15 @@ contract MultiSigWalletTest is Test {
 
 File: `contracts/test/multisig/MultiSigWallet.t.sol`
 
-- [ ] **Step 4: Run test to verify build compiles**
+- [ ] **Langkah 4: Jalankan test untuk verifikasi build terkompilasi**
 
 ```bash
 cd contracts && forge test -vvv
 ```
 
-Expected: compile failure — `Constructor args not found on MultiSigWallet`.
+Ekspektasi: compile failure — `Constructor args not found on MultiSigWallet`.
 
-- [ ] **Step 5: Commit**
+- [ ] **Langkah 5: Commit**
 
 ```bash
 git add contracts/src/multisig/ contracts/test/multisig/
@@ -126,14 +126,14 @@ git commit -m "chore: scaffold MultiSigWallet contract and test files"
 
 ---
 
-### Task 2: Implement deploy logic (constructor, owners, required)
+### Task 2: Implementasi logika deploy (constructor, owners, required)
 
-**Files:**
-- Modify: `contracts/src/multisig/MultiSigWallet.sol`
+**File:**
+- Modifikasi: `contracts/src/multisig/MultiSigWallet.sol`
 
-- [ ] **Step 1: Write the test for successful deploy**
+- [ ] **Langkah 1: Tulis test untuk deploy sukses**
 
-Add to `MultiSigWallet.t.sol`:
+Tambahkan ke `MultiSigWallet.t.sol`:
 
 ```solidity
 function test_Deploy_Success() public {
@@ -150,17 +150,17 @@ function test_Deploy_Success() public {
 }
 ```
 
-- [ ] **Step 2: Run test — verify it fails**
+- [ ] **Langkah 2: Jalankan test — verifikasi gagal**
 
 ```bash
 cd contracts && forge test --match-test test_Deploy_Success -vvv
 ```
 
-Expected: FAIL — `required` and `getOwners` not defined.
+Ekspektasi: FAIL — `required` dan `getOwners` tidak terdefinisi.
 
-- [ ] **Step 3: Implement constructor, storage, and view functions**
+- [ ] **Langkah 3: Implementasi constructor, storage, dan view functions**
 
-Replace the empty contract body with:
+Ganti body kontrak kosong dengan:
 
 ```solidity
 contract MultiSigWallet {
@@ -237,15 +237,15 @@ contract MultiSigWallet {
 
 File: `contracts/src/multisig/MultiSigWallet.sol`
 
-- [ ] **Step 4: Run test — verify it passes**
+- [ ] **Langkah 4: Jalankan test — verifikasi lulus**
 
 ```bash
 cd contracts && forge test --match-test test_Deploy_Success -vvv
 ```
 
-Expected: PASS.
+Ekspektasi: PASS.
 
-- [ ] **Step 5: Commit**
+- [ ] **Langkah 5: Commit**
 
 ```bash
 git add contracts/src/multisig/MultiSigWallet.sol contracts/test/multisig/MultiSigWallet.t.sol
@@ -254,14 +254,14 @@ git commit -m "feat: implement MultiSigWallet constructor with owner validation"
 
 ---
 
-### Task 3: Deploy validation — revert tests
+### Task 3: Validasi deploy — test revert
 
-**Files:**
-- Modify: `contracts/test/multisig/MultiSigWallet.t.sol`
+**File:**
+- Modifikasi: `contracts/test/multisig/MultiSigWallet.t.sol`
 
-- [ ] **Step 1: Write revert tests**
+- [ ] **Langkah 1: Tulis test revert**
 
-Add to test file:
+Tambahkan ke file test:
 
 ```solidity
 function test_Deploy_RevertIf_NoOwners() public {
@@ -298,21 +298,21 @@ function test_Deploy_RevertIf_DuplicateOwner() public {
     address[] memory owners = new address[](3);
     owners[0] = owner1;
     owners[1] = owner2;
-    owners[2] = owner1; // duplicate
+    owners[2] = owner1; // duplikat
     vm.expectRevert(MultiSigWallet.DuplicateOwner.selector);
     new MultiSigWallet(owners, 2);
 }
 ```
 
-- [ ] **Step 2: Run tests — verify all pass**
+- [ ] **Langkah 2: Jalankan test — verifikasi semua lulus**
 
 ```bash
 cd contracts && forge test --match-contract MultiSigWalletTest -vvv
 ```
 
-Expected: 6 tests PASS (1 deploy success + 5 revert tests).
+Ekspektasi: 6 test PASS (1 deploy sukses + 5 test revert).
 
-- [ ] **Step 3: Commit**
+- [ ] **Langkah 3: Commit**
 
 ```bash
 git add contracts/test/multisig/MultiSigWallet.t.sol
@@ -321,15 +321,15 @@ git commit -m "test: add deploy validation revert tests for MultiSigWallet"
 
 ---
 
-### Task 4: Implement receive() and Deposit event
+### Task 4: Implementasi receive() dan Deposit event
 
-**Files:**
-- Modify: `contracts/src/multisig/MultiSigWallet.sol`
-- Modify: `contracts/test/multisig/MultiSigWallet.t.sol`
+**File:**
+- Modifikasi: `contracts/src/multisig/MultiSigWallet.sol`
+- Modifikasi: `contracts/test/multisig/MultiSigWallet.t.sol`
 
-- [ ] **Step 1: Write deposit test**
+- [ ] **Langkah 1: Tulis test deposit**
 
-Add to test file:
+Tambahkan ke file test:
 
 ```solidity
 function test_Deposit_EmitsEvent() public {
@@ -351,17 +351,17 @@ function test_Deposit_ReceiveFunction() public {
 }
 ```
 
-- [ ] **Step 2: Run test — verify it fails**
+- [ ] **Langkah 2: Jalankan test — verifikasi gagal**
 
 ```bash
 cd contracts && forge test --match-test test_Deposit -vvv
 ```
 
-Expected: PASS (receive already works by default in Solidity, but we want the event check). Actually this should pass because `receive()` is implicit. The test runs fine.
+Ekspektasi: PASS (receive sudah bekerja secara default di Solidity, tapi kami ingin pengecekan event). Sebenarnya ini harus lulus karena `receive()` bersifat implisit. Test berjalan dengan baik.
 
-- [ ] **Step 3: Add explicit receive() with event**
+- [ ] **Langkah 3: Tambah explicit receive() dengan event**
 
-Add to contract body (after constructor):
+Tambahkan ke body kontrak (setelah constructor):
 
 ```solidity
 receive() external payable {
@@ -369,7 +369,7 @@ receive() external payable {
 }
 ```
 
-- [ ] **Step 4: Update test to check event**
+- [ ] **Langkah 4: Update test untuk memeriksa event**
 
 ```solidity
 function test_Deposit_EmitsEvent() public {
@@ -384,15 +384,15 @@ function test_Deposit_EmitsEvent() public {
 }
 ```
 
-- [ ] **Step 5: Run tests — verify all pass**
+- [ ] **Langkah 5: Jalankan test — verifikasi semua lulus**
 
 ```bash
 cd contracts && forge test --match-test test_Deposit -vvv
 ```
 
-Expected: 2 PASS.
+Ekspektasi: 2 PASS.
 
-- [ ] **Step 6: Commit**
+- [ ] **Langkah 6: Commit**
 
 ```bash
 git add contracts/src/multisig/MultiSigWallet.sol contracts/test/multisig/MultiSigWallet.t.sol
@@ -401,15 +401,15 @@ git commit -m "feat: add receive() with Deposit event to MultiSigWallet"
 
 ---
 
-### Task 5: Implement submitTransaction
+### Task 5: Implementasi submitTransaction
 
-**Files:**
-- Modify: `contracts/src/multisig/MultiSigWallet.sol`
-- Modify: `contracts/test/multisig/MultiSigWallet.t.sol`
+**File:**
+- Modifikasi: `contracts/src/multisig/MultiSigWallet.sol`
+- Modifikasi: `contracts/test/multisig/MultiSigWallet.t.sol`
 
-- [ ] **Step 1: Write submit tests**
+- [ ] **Langkah 1: Tulis test submit**
 
-Add to test file:
+Tambahkan ke file test:
 
 ```solidity
 function test_Submit_Success() public {
@@ -457,17 +457,17 @@ function test_Submit_WithCalldata() public {
 }
 ```
 
-- [ ] **Step 2: Run test — verify it fails**
+- [ ] **Langkah 2: Jalankan test — verifikasi gagal**
 
 ```bash
 cd contracts && forge test --match-test test_Submit -vvv
 ```
 
-Expected: FAIL — `submitTransaction` not implemented.
+Ekspektasi: FAIL — `submitTransaction` belum diimplementasi.
 
-- [ ] **Step 3: Add Transaction struct and submitTransaction**
+- [ ] **Langkah 3: Tambah Transaction struct dan submitTransaction**
 
-Add to contract (after owner storage):
+Tambahkan ke kontrak (setelah storage owner):
 
 ```solidity
 struct Transaction {
@@ -490,7 +490,7 @@ event SubmitTransaction(
 );
 ```
 
-Add before `getOwners()`:
+Tambahkan sebelum `getOwners()`:
 
 ```solidity
 function submitTransaction(
@@ -530,15 +530,15 @@ function getTransaction(
 }
 ```
 
-- [ ] **Step 4: Run tests — verify all pass**
+- [ ] **Langkah 4: Jalankan test — verifikasi semua lulus**
 
 ```bash
 cd contracts && forge test --match-test test_Submit -vvv
 ```
 
-Expected: 5 PASS.
+Ekspektasi: 5 PASS.
 
-- [ ] **Step 5: Commit**
+- [ ] **Langkah 5: Commit**
 
 ```bash
 git add contracts/src/multisig/MultiSigWallet.sol contracts/test/multisig/MultiSigWallet.t.sol
@@ -547,15 +547,15 @@ git commit -m "feat: add submitTransaction with auto-confirm by submitter"
 
 ---
 
-### Task 6: Implement confirmTransaction
+### Task 6: Implementasi confirmTransaction
 
-**Files:**
-- Modify: `contracts/src/multisig/MultiSigWallet.sol`
-- Modify: `contracts/test/multisig/MultiSigWallet.t.sol`
+**File:**
+- Modifikasi: `contracts/src/multisig/MultiSigWallet.sol`
+- Modifikasi: `contracts/test/multisig/MultiSigWallet.t.sol`
 
-- [ ] **Step 1: Write confirm tests**
+- [ ] **Langkah 1: Tulis test confirm**
 
-Add to test file:
+Tambahkan ke file test:
 
 ```solidity
 function test_Confirm_Success() public {
@@ -605,7 +605,7 @@ function test_Confirm_RevertIf_AlreadyExecuted() public {
     vm.prank(owner2);
     wallet.confirmTransaction(0);
 
-    // Execute: 2 of 3 approved
+    // Eksekusi: 2 dari 3 menyetujui
     vm.prank(owner1);
     wallet.executeTransaction(0);
 
@@ -615,17 +615,17 @@ function test_Confirm_RevertIf_AlreadyExecuted() public {
 }
 ```
 
-- [ ] **Step 2: Run test — verify it fails**
+- [ ] **Langkah 2: Jalankan test — verifikasi gagal**
 
 ```bash
 cd contracts && forge test --match-test test_Confirm -vvv
 ```
 
-Expected: FAIL — `confirmTransaction` and `executeTransaction` not implemented.
+Ekspektasi: FAIL — `confirmTransaction` dan `executeTransaction` belum diimplementasi.
 
-- [ ] **Step 3: Add confirmTransaction**
+- [ ] **Langkah 3: Tambah confirmTransaction**
 
-Add before `getOwners()`:
+Tambahkan sebelum `getOwners()`:
 
 ```solidity
 event ConfirmTransaction(address indexed owner, uint256 indexed txIndex);
@@ -641,7 +641,7 @@ function confirmTransaction(
 }
 ```
 
-Also add a placeholder for `executeTransaction` (test expects it):
+Juga tambahkan placeholder untuk `executeTransaction` (test membutuhkannya):
 
 ```solidity
 event ExecuteTransaction(address indexed owner, uint256 indexed txIndex);
@@ -649,22 +649,22 @@ event ExecuteTransaction(address indexed owner, uint256 indexed txIndex);
 function executeTransaction(
     uint256 txIndex
 ) external txExists(txIndex) notExecuted(txIndex) {
-    // Stub — will be fully implemented in Task 7
+    // Stub — akan diimplementasi penuh di Task 7
     if (transactions[txIndex].numConfirmations < required) revert NotEnoughConfirmations();
     transactions[txIndex].executed = true;
     emit ExecuteTransaction(msg.sender, txIndex);
 }
 ```
 
-- [ ] **Step 4: Run tests — verify all pass**
+- [ ] **Langkah 4: Jalankan test — verifikasi semua lulus**
 
 ```bash
 cd contracts && forge test --match-test test_Confirm -vvv
 ```
 
-Expected: 5 PASS.
+Ekspektasi: 5 PASS.
 
-- [ ] **Step 5: Commit**
+- [ ] **Langkah 5: Commit**
 
 ```bash
 git add contracts/src/multisig/MultiSigWallet.sol contracts/test/multisig/MultiSigWallet.t.sol
@@ -673,33 +673,33 @@ git commit -m "feat: add confirmTransaction with access control and state valida
 
 ---
 
-### Task 7: Implement executeTransaction (ETH transfer)
+### Task 7: Implementasi executeTransaction (transfer ETH)
 
-**Files:**
-- Modify: `contracts/src/multisig/MultiSigWallet.sol`
-- Modify: `contracts/test/multisig/MultiSigWallet.t.sol`
+**File:**
+- Modifikasi: `contracts/src/multisig/MultiSigWallet.sol`
+- Modifikasi: `contracts/test/multisig/MultiSigWallet.t.sol`
 
-- [ ] **Step 1: Write execute tests**
+- [ ] **Langkah 1: Tulis test execute**
 
-Add to test file:
+Tambahkan ke file test:
 
 ```solidity
 function test_Execute_Success_ETHTransfer() public {
-    // Fund the wallet
+    // Danai wallet
     vm.deal(address(wallet), 2 ether);
 
-    // Owner1 submits a transfer to recipient
+    // Owner1 submit transfer ke penerima
     address recipient = address(0x50);
     vm.prank(owner1);
     wallet.submitTransaction(recipient, 1 ether, "");
 
-    // Owner2 confirms
+    // Owner2 konfirmasi
     vm.prank(owner2);
     wallet.confirmTransaction(0);
 
     uint256 recipientBalBefore = recipient.balance;
 
-    // Anyone can execute once threshold met
+    // Siapa saja bisa execute setelah threshold terpenuhi
     vm.prank(stranger);
     wallet.executeTransaction(0);
 
@@ -713,7 +713,7 @@ function test_Execute_RevertIf_NotEnoughConfirmations() public {
     vm.prank(owner1);
     wallet.submitTransaction(address(0x50), 0.5 ether, "");
 
-    // Only 1 of 2 required
+    // Hanya 1 dari 2 yang dibutuhkan
     vm.prank(owner1);
     vm.expectRevert(MultiSigWallet.NotEnoughConfirmations.selector);
     wallet.executeTransaction(0);
@@ -749,7 +749,7 @@ function test_Execute_CanBeCalledByAnyone() public {
     vm.prank(owner2);
     wallet.confirmTransaction(0);
 
-    // Stranger executes
+    // Orang asing mengeksekusi
     vm.prank(stranger);
     wallet.executeTransaction(0);
 
@@ -758,15 +758,15 @@ function test_Execute_CanBeCalledByAnyone() public {
 
 function test_Execute_FailedCall_DoesNotMarkExecuted() public {
     vm.deal(address(wallet), 1 ether);
-    // Submit tx to address with no code that will revert
+    // Submit tx ke alamat tanpa kode yang akan revert
     vm.prank(owner1);
-    wallet.submitTransaction(address(0x50), 2 ether, ""); // more than balance
+    wallet.submitTransaction(address(0x50), 2 ether, ""); // lebih dari saldo
 
     vm.prank(owner2);
     wallet.confirmTransaction(0);
 
     vm.prank(owner1);
-    // Should revert due to insufficient balance
+    // Harus revert karena saldo tidak mencukupi
     vm.expectRevert(MultiSigWallet.ExecutionFailed.selector);
     wallet.executeTransaction(0);
 
@@ -775,7 +775,7 @@ function test_Execute_FailedCall_DoesNotMarkExecuted() public {
 }
 
 function test_Execute_WithCalldata() public {
-    // Deploy a simple receiver contract
+    // Deploy kontrak penerima sederhana
     TestReceiver receiver = new TestReceiver();
     vm.deal(address(wallet), 1 ether);
 
@@ -793,7 +793,7 @@ function test_Execute_WithCalldata() public {
 }
 ```
 
-- [ ] **Step 2: Add TestReceiver helper contract at bottom of test file**
+- [ ] **Langkah 2: Tambah kontrak helper TestReceiver di bagian bawah file test**
 
 ```solidity
 contract TestReceiver {
@@ -807,17 +807,17 @@ contract TestReceiver {
 }
 ```
 
-- [ ] **Step 3: Run test — verify it fails**
+- [ ] **Langkah 3: Jalankan test — verifikasi gagal**
 
 ```bash
 cd contracts && forge test --match-test test_Execute_Success -vvv
 ```
 
-Expected: FAIL — executeTransaction is a stub, doesn't actually send ETH.
+Ekspektasi: FAIL — executeTransaction masih stub, tidak benar-benar mengirim ETH.
 
-- [ ] **Step 4: Implement full executeTransaction with CEI pattern**
+- [ ] **Langkah 4: Implementasi executeTransaction penuh dengan pola CEI**
 
-Replace the stub `executeTransaction`:
+Ganti stub `executeTransaction`:
 
 ```solidity
 function executeTransaction(
@@ -837,7 +837,7 @@ function executeTransaction(
 }
 ```
 
-Note: contract uses internal `transactions` array directly in the test `test_Execute_CanBeCalledByAnyone`. That won't work — `transactions` is not visible. Fix the test:
+Catatan: kontrak menggunakan array internal `transactions` langsung di test `test_Execute_CanBeCalledByAnyone`. Itu tidak akan berfungsi — `transactions` tidak terlihat. Perbaiki test:
 
 ```solidity
 function test_Execute_CanBeCalledByAnyone() public {
@@ -848,7 +848,7 @@ function test_Execute_CanBeCalledByAnyone() public {
     vm.prank(owner2);
     wallet.confirmTransaction(0);
 
-    // Stranger executes
+    // Orang asing mengeksekusi
     vm.prank(stranger);
     wallet.executeTransaction(0);
 
@@ -857,15 +857,15 @@ function test_Execute_CanBeCalledByAnyone() public {
 }
 ```
 
-- [ ] **Step 5: Run tests — verify all pass**
+- [ ] **Langkah 5: Jalankan test — verifikasi semua lulus**
 
 ```bash
 cd contracts && forge test --match-test test_Execute -vvv
 ```
 
-Expected: 7 PASS.
+Ekspektasi: 7 PASS.
 
-- [ ] **Step 6: Commit**
+- [ ] **Langkah 6: Commit**
 
 ```bash
 git add contracts/src/multisig/MultiSigWallet.sol contracts/test/multisig/MultiSigWallet.t.sol
@@ -874,15 +874,15 @@ git commit -m "feat: implement executeTransaction with CEI pattern for ETH and c
 
 ---
 
-### Task 8: Implement revokeConfirmation
+### Task 8: Implementasi revokeConfirmation
 
-**Files:**
-- Modify: `contracts/src/multisig/MultiSigWallet.sol`
-- Modify: `contracts/test/multisig/MultiSigWallet.t.sol`
+**File:**
+- Modifikasi: `contracts/src/multisig/MultiSigWallet.sol`
+- Modifikasi: `contracts/test/multisig/MultiSigWallet.t.sol`
 
-- [ ] **Step 1: Write revoke tests**
+- [ ] **Langkah 1: Tulis test revoke**
 
-Add to test file:
+Tambahkan ke file test:
 
 ```solidity
 function test_Revoke_Success() public {
@@ -938,19 +938,19 @@ function test_Revoke_AndReapprove() public {
     vm.prank(owner2);
     wallet.confirmTransaction(0);
 
-    // Owner2 revokes
+    // Owner2 membatalkan
     vm.prank(owner2);
     wallet.revokeConfirmation(0);
     assertEq(getConfirmationCount(0), 1);
 
-    // Owner2 re-approves
+    // Owner2 menyetujui lagi
     vm.prank(owner2);
     wallet.confirmTransaction(0);
     assertEq(getConfirmationCount(0), 2);
 }
 ```
 
-Add a helper:
+Tambahkan helper:
 
 ```solidity
 function getConfirmationCount(uint256 txIndex) internal view returns (uint256) {
@@ -960,17 +960,17 @@ function getConfirmationCount(uint256 txIndex) internal view returns (uint256) {
 }
 ```
 
-- [ ] **Step 2: Run test — verify it fails**
+- [ ] **Langkah 2: Jalankan test — verifikasi gagal**
 
 ```bash
 cd contracts && forge test --match-test test_Revoke -vvv
 ```
 
-Expected: FAIL — `revokeConfirmation` not implemented.
+Ekspektasi: FAIL — `revokeConfirmation` belum diimplementasi.
 
-- [ ] **Step 3: Add revokeConfirmation**
+- [ ] **Langkah 3: Tambah revokeConfirmation**
 
-Add after `confirmTransaction`:
+Tambahkan setelah `confirmTransaction`:
 
 ```solidity
 event RevokeConfirmation(address indexed owner, uint256 indexed txIndex);
@@ -989,15 +989,15 @@ function revokeConfirmation(
 }
 ```
 
-- [ ] **Step 4: Run tests — verify all pass**
+- [ ] **Langkah 4: Jalankan test — verifikasi semua lulus**
 
 ```bash
 cd contracts && forge test --match-test test_Revoke -vvv
 ```
 
-Expected: 5 PASS.
+Ekspektasi: 5 PASS.
 
-- [ ] **Step 5: Commit**
+- [ ] **Langkah 5: Commit**
 
 ```bash
 git add contracts/src/multisig/MultiSigWallet.sol contracts/test/multisig/MultiSigWallet.t.sol
@@ -1006,68 +1006,68 @@ git commit -m "feat: add revokeConfirmation with re-approval support"
 
 ---
 
-### Task 9: Full flow integration test (2-of-3 wallet)
+### Task 9: Integration test full flow (wallet 2-of-3)
 
-**Files:**
-- Modify: `contracts/test/multisig/MultiSigWallet.t.sol`
+**File:**
+- Modifikasi: `contracts/test/multisig/MultiSigWallet.t.sol`
 
-- [ ] **Step 1: Write full flow test**
+- [ ] **Langkah 1: Tulis test full flow**
 
-Add to test file:
+Tambahkan ke file test:
 
 ```solidity
 function test_FullFlow_2of3_Wallet() public {
-    // Setup: 2-of-3 wallet, funded with 3 ETH
+    // Setup: wallet 2-of-3, didanai 3 ETH
     vm.deal(address(wallet), 3 ether);
     address alice = owner1;
     address bob = owner2;
     address charlie = owner3;
     address recipient = address(0x50);
 
-    // Alice submits: send 1.5 ETH to recipient
+    // Alice submit: kirim 1,5 ETH ke penerima
     vm.prank(alice);
     uint256 tx1 = wallet.submitTransaction(recipient, 1.5 ether, "");
     assertEq(tx1, 0);
 
-    // Bob submits: send 0.5 ETH to recipient
+    // Bob submit: kirim 0,5 ETH ke penerima
     vm.prank(bob);
     uint256 tx2 = wallet.submitTransaction(recipient, 0.5 ether, "");
     assertEq(tx2, 1);
 
-    // Charlie confirms tx1
+    // Charlie konfirmasi tx1
     vm.prank(charlie);
     wallet.confirmTransaction(0);
 
-    // Execute tx1 (alice + charlie = 2)
+    // Eksekusi tx1 (alice + charlie = 2)
     uint256 recipientBalBefore = recipient.balance;
     vm.prank(alice);
     wallet.executeTransaction(0);
     assertEq(recipient.balance, recipientBalBefore + 1.5 ether);
 
-    // Alice confirms tx2
+    // Alice konfirmasi tx2
     vm.prank(alice);
     wallet.confirmTransaction(1);
 
-    // Execute tx2 (bob + alice = 2)
+    // Eksekusi tx2 (bob + alice = 2)
     vm.prank(bob);
     wallet.executeTransaction(1);
     assertEq(recipient.balance, recipientBalBefore + 2 ether);
 
-    // Wallet balance should be 1 ETH
+    // Saldo wallet harus 1 ETH
     assertEq(address(wallet).balance, 1 ether);
     assertEq(wallet.getTransactionCount(), 2);
 }
 ```
 
-- [ ] **Step 2: Run test — verify it passes**
+- [ ] **Langkah 2: Jalankan test — verifikasi lulus**
 
 ```bash
 cd contracts && forge test --match-test test_FullFlow_2of3_Wallet -vvv
 ```
 
-Expected: PASS.
+Ekspektasi: PASS.
 
-- [ ] **Step 3: Commit**
+- [ ] **Langkah 3: Commit**
 
 ```bash
 git add contracts/test/multisig/MultiSigWallet.t.sol
@@ -1076,21 +1076,21 @@ git commit -m "test: add full flow 2-of-3 wallet integration test"
 
 ---
 
-### Task 10: Owner management — addOwner + removeOwner via internal proposals
+### Task 10: Manajemen pemilik — addOwner + removeOwner via proposal internal
 
-**Files:**
-- Modify: `contracts/src/multisig/MultiSigWallet.sol`
-- Modify: `contracts/test/multisig/MultiSigWallet.t.sol`
+**File:**
+- Modifikasi: `contracts/src/multisig/MultiSigWallet.sol`
+- Modifikasi: `contracts/test/multisig/MultiSigWallet.t.sol`
 
-- [ ] **Step 1: Write owner management tests**
+- [ ] **Langkah 1: Tulis test manajemen pemilik**
 
-Add to test file:
+Tambahkan ke file test:
 
 ```solidity
 function test_AddOwner_ViaMultiSig() public {
     address newOwner = address(0x99);
 
-    // Submit proposal: addOwner encoded as calldata to self
+    // Submit proposal: addOwner dienkode sebagai calldata ke diri sendiri
     bytes memory data = abi.encodeWithSignature("addOwner(address)", newOwner);
     vm.prank(owner1);
     wallet.submitTransaction(address(wallet), 0, data);
@@ -1139,12 +1139,12 @@ function test_ChangeThreshold_ViaMultiSig() public {
 }
 
 function test_RemoveOwner_RevertIf_ThresholdWouldBreak() public {
-    // 2-of-3 wallet, removing one owner would make it 2-of-2 (valid)
-    // But if we try to make a 3-of-2 state...
-    // Actually let's test: remove owner and threshold becomes invalid
-    // 2-of-3 → remove 1 → 2-of-2 is OK. Let's test change threshold to > owners
+    // Wallet 2-of-3, menghapus satu pemilik akan menjadikannya 2-of-2 (valid)
+    // Tapi jika kita mencoba membuat state 3-of-2...
+    // Sebenarnya mari test: hapus pemilik dan threshold menjadi tidak valid
+    // 2-of-3 → hapus 1 → 2-of-2 OK. Mari test ubah threshold ke > jumlah pemilik
 
-    // Change to 4-of-3 (invalid)
+    // Ubah ke 4-of-3 (tidak valid)
     bytes memory data = abi.encodeWithSignature("changeRequirement(uint256)", 4);
     vm.prank(owner1);
     wallet.submitTransaction(address(wallet), 0, data);
@@ -1158,17 +1158,17 @@ function test_RemoveOwner_RevertIf_ThresholdWouldBreak() public {
 }
 ```
 
-- [ ] **Step 2: Run test — verify it fails**
+- [ ] **Langkah 2: Jalankan test — verifikasi gagal**
 
 ```bash
 cd contracts && forge test --match-test test_AddOwner -vvv
 ```
 
-Expected: FAIL — `addOwner` not implemented.
+Ekspektasi: FAIL — `addOwner` belum diimplementasi.
 
-- [ ] **Step 3: Add addOwner, removeOwner, changeRequirement**
+- [ ] **Langkah 3: Tambah addOwner, removeOwner, changeRequirement**
 
-Add to contract body (after confirmTransaction):
+Tambahkan ke body kontrak (setelah confirmTransaction):
 
 ```solidity
 function addOwner(address newOwner) external onlyOwner_ {
@@ -1187,7 +1187,7 @@ function removeOwner(address owner) external onlyOwner_ {
 
     isOwner[owner] = false;
 
-    // Remove from array (order doesn't matter — swap and pop)
+    // Hapus dari array (urutan tidak penting — swap and pop)
     for (uint256 i = 0; i < owners.length; i++) {
         if (owners[i] == owner) {
             owners[i] = owners[owners.length - 1];
@@ -1208,15 +1208,15 @@ function changeRequirement(uint256 newRequired) external onlyOwner_ {
 }
 ```
 
-- [ ] **Step 4: Run tests — verify all pass**
+- [ ] **Langkah 4: Jalankan test — verifikasi semua lulus**
 
 ```bash
 cd contracts && forge test --match-test "test_AddOwner|test_RemoveOwner|test_ChangeThreshold" -vvv
 ```
 
-Expected: 4 PASS.
+Ekspektasi: 4 PASS.
 
-- [ ] **Step 5: Commit**
+- [ ] **Langkah 5: Commit**
 
 ```bash
 git add contracts/src/multisig/MultiSigWallet.sol contracts/test/multisig/MultiSigWallet.t.sol
@@ -1225,18 +1225,18 @@ git commit -m "feat: add owner management (add/remove/changeThreshold) via inter
 
 ---
 
-### Task 11: ERC-20 support test
+### Task 11: Test dukungan ERC-20
 
-**Files:**
-- Modify: `contracts/test/multisig/MultiSigWallet.t.sol`
+**File:**
+- Modifikasi: `contracts/test/multisig/MultiSigWallet.t.sol`
 
-- [ ] **Step 1: Write ERC-20 transfer test using mock token**
+- [ ] **Langkah 1: Tulis test transfer ERC-20 menggunakan mock token**
 
-Add to test file:
+Tambahkan ke file test:
 
 ```solidity
 function test_ERC20_Transfer() public {
-    // Deploy mock ERC-20 and mint to wallet
+    // Deploy mock ERC-20 dan mint ke wallet
     MockERC20 token = new MockERC20("Test", "TST");
     token.mint(address(wallet), 1000 ether);
 
@@ -1257,7 +1257,7 @@ function test_ERC20_Transfer() public {
 }
 ```
 
-Add MockERC20 at bottom of test file:
+Tambahkan MockERC20 di bagian bawah file test:
 
 ```solidity
 contract MockERC20 {
@@ -1283,15 +1283,15 @@ contract MockERC20 {
 }
 ```
 
-- [ ] **Step 2: Run test — verify it passes**
+- [ ] **Langkah 2: Jalankan test — verifikasi lulus**
 
 ```bash
 cd contracts && forge test --match-test test_ERC20_Transfer -vvv
 ```
 
-Expected: PASS.
+Ekspektasi: PASS.
 
-- [ ] **Step 3: Commit**
+- [ ] **Langkah 3: Commit**
 
 ```bash
 git add contracts/test/multisig/MultiSigWallet.t.sol
@@ -1302,10 +1302,10 @@ git commit -m "test: add ERC-20 transfer via multi-sig test with mock token"
 
 ### Task 12: Fuzz testing
 
-**Files:**
-- Create: `contracts/test/multisig/MultiSigWallet.fuzz.t.sol`
+**File:**
+- Buat: `contracts/test/multisig/MultiSigWallet.fuzz.t.sol`
 
-- [ ] **Step 1: Write fuzz test file**
+- [ ] **Langkah 1: Tulis file fuzz test**
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -1381,20 +1381,20 @@ contract MultiSigWalletFuzzTest is Test {
         vm.prank(owner1);
         wallet.submitTransaction(owner2, value, "");
 
-        // Owner1 revokes his auto-confirmation
+        // Owner1 membatalkan auto-confirmation-nya
         vm.prank(owner1);
         wallet.revokeConfirmation(0);
         (,,, bool executed, uint256 count) = wallet.getTransaction(0);
         assertFalse(executed);
         assertEq(count, 0);
 
-        // Owner1 re-confirms, owner2 confirms
+        // Owner1 konfirmasi ulang, owner2 konfirmasi
         vm.prank(owner1);
         wallet.confirmTransaction(0);
         vm.prank(owner2);
         wallet.confirmTransaction(0);
 
-        // Execute
+        // Eksekusi
         wallet.executeTransaction(0);
         (,,, bool execed,) = wallet.getTransaction(0);
         assertTrue(execed);
@@ -1404,15 +1404,15 @@ contract MultiSigWalletFuzzTest is Test {
 
 File: `contracts/test/multisig/MultiSigWallet.fuzz.t.sol`
 
-- [ ] **Step 2: Run fuzz tests**
+- [ ] **Langkah 2: Jalankan fuzz test**
 
 ```bash
 cd contracts && forge test --match-contract MultiSigWalletFuzzTest -vvv
 ```
 
-Expected: 4 PASS (each running 200-500 fuzz runs).
+Ekspektasi: 4 PASS (masing-masing menjalankan 200-500 fuzz runs).
 
-- [ ] **Step 3: Commit**
+- [ ] **Langkah 3: Commit**
 
 ```bash
 git add contracts/test/multisig/MultiSigWallet.fuzz.t.sol
@@ -1421,42 +1421,42 @@ git commit -m "test: add fuzz tests for submit, deploy, execute, revoke"
 
 ---
 
-### Task 13: Run full test suite and check coverage
+### Task 13: Jalankan seluruh test suite dan cek coverage
 
-**Files:**
-- None (verification only)
+**File:**
+- Tidak ada (hanya verifikasi)
 
-- [ ] **Step 1: Run all MultiSigWallet tests**
+- [ ] **Langkah 1: Jalankan semua test MultiSigWallet**
 
 ```bash
 cd contracts && forge test --match-path test/multisig/* -vvv
 ```
 
-Expected: all tests PASS (unit + integration + fuzz, ~30 tests).
+Ekspektasi: semua test PASS (unit + integration + fuzz, ~30 test).
 
-- [ ] **Step 2: Run forge coverage**
+- [ ] **Langkah 2: Jalankan forge coverage**
 
 ```bash
 cd contracts && forge coverage --report lcov --report-file lcov.info
 ```
 
-- [ ] **Step 3: Check coverage summary**
+- [ ] **Langkah 3: Cek ringkasan coverage**
 
 ```bash
 cd contracts && forge coverage --report summary
 ```
 
-Expected: MultiSigWallet.sol ≥ 95% line coverage.
+Ekspektasi: MultiSigWallet.sol cakupan baris ≥ 95%.
 
-- [ ] **Step 4: Run existing tests to confirm no regression**
+- [ ] **Langkah 4: Jalankan test existing untuk konfirmasi tidak ada regresi**
 
 ```bash
 cd contracts && forge test -vvv
 ```
 
-Expected: all existing tests (AnalysisRegistry, ReportSBT) still PASS.
+Ekspektasi: semua test existing (AnalysisRegistry, ReportSBT) masih PASS.
 
-- [ ] **Step 5: Commit**
+- [ ] **Langkah 5: Commit**
 
 ```bash
 git add .
@@ -1465,19 +1465,19 @@ git commit -m "chore: verify full test suite passes with 95%+ coverage"
 
 ---
 
-### Task 14: Create MultiSigGovernor — scaffolding and test file
+### Task 14: Buat MultiSigGovernor — scaffolding dan file test
 
-**Files:**
-- Create: `contracts/src/governance/MultiSigGovernor.sol`
-- Create: `contracts/test/governance/MultiSigGovernor.t.sol`
+**File:**
+- Buat: `contracts/src/governance/MultiSigGovernor.sol`
+- Buat: `contracts/test/governance/MultiSigGovernor.t.sol`
 
-- [ ] **Step 1: Create directory**
+- [ ] **Langkah 1: Buat direktori**
 
 ```bash
 mkdir -p contracts/src/governance contracts/test/governance
 ```
 
-- [ ] **Step 2: Write MultiSigGovernor contract**
+- [ ] **Langkah 2: Tulis kontrak MultiSigGovernor**
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -1489,9 +1489,9 @@ import {ReportSBT} from "../ReportSBT.sol";
 
 /**
  * @title MultiSigGovernor
- * @notice Governance adapter that routes multi-sig proposals to ChainNusa contracts.
- *         Only owners of the linked MultiSigWallet can submit governance proposals.
- *         Proposals are executed through the MultiSigWallet's approve-execute flow.
+ * @notice Adaptor tata kelola yang merutekan proposal multi-sig ke kontrak ChainNusa.
+ *         Hanya pemilik dari MultiSigWallet yang terhubung dapat submit proposal tata kelola.
+ *         Proposal dieksekusi melalui alur approve-execute MultiSigWallet.
  */
 contract MultiSigGovernor {
     MultiSigWallet public immutable wallet;
@@ -1516,8 +1516,8 @@ contract MultiSigGovernor {
     }
 
     /**
-     * @notice Submit a proposal to record an analysis on-chain.
-     * @return txIndex Index of the proposal in the MultiSigWallet.
+     * @notice Submit proposal untuk merekam analisis on-chain.
+     * @return txIndex Index proposal di MultiSigWallet.
      */
     function proposeRecordAnalysis(
         bytes32 cidBytes,
@@ -1534,8 +1534,8 @@ contract MultiSigGovernor {
     }
 
     /**
-     * @notice Submit a proposal to mint a ReportSBT.
-     * @return txIndex Index of the proposal in the MultiSigWallet.
+     * @notice Submit proposal untuk mint ReportSBT.
+     * @return txIndex Index proposal di MultiSigWallet.
      */
     function proposeMintSBT(
         address to,
@@ -1555,7 +1555,7 @@ contract MultiSigGovernor {
 
 File: `contracts/src/governance/MultiSigGovernor.sol`
 
-- [ ] **Step 3: Write MultiSigGovernor test scaffolding**
+- [ ] **Langkah 3: Tulis scaffolding test MultiSigGovernor**
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -1591,7 +1591,7 @@ contract MultiSigGovernorTest is Test {
 
         governor = new MultiSigGovernor(address(wallet), address(registry), address(sbt));
 
-        // Transfer ownership of ReportSBT to governor so it can mint
+        // Transfer kepemilikan ReportSBT ke governor agar bisa mint
         sbt.transferOwnership(address(governor));
     }
 }
@@ -1599,15 +1599,15 @@ contract MultiSigGovernorTest is Test {
 
 File: `contracts/test/governance/MultiSigGovernor.t.sol`
 
-- [ ] **Step 4: Run tests to verify build compiles**
+- [ ] **Langkah 4: Jalankan test untuk verifikasi build terkompilasi**
 
 ```bash
 cd contracts && forge test --match-contract MultiSigGovernorTest -vvv
 ```
 
-Expected: compile success, 0 tests run (no test functions yet).
+Ekspektasi: compile success, 0 test dijalankan (belum ada fungsi test).
 
-- [ ] **Step 5: Commit**
+- [ ] **Langkah 5: Commit**
 
 ```bash
 git add contracts/src/governance/ contracts/test/governance/
@@ -1616,14 +1616,14 @@ git commit -m "feat: scaffold MultiSigGovernor — governance adapter for Analys
 
 ---
 
-### Task 15: MultiSigGovernor — proposeRecordAnalysis tests
+### Task 15: MultiSigGovernor — test proposeRecordAnalysis
 
-**Files:**
-- Modify: `contracts/test/governance/MultiSigGovernor.t.sol`
+**File:**
+- Modifikasi: `contracts/test/governance/MultiSigGovernor.t.sol`
 
-- [ ] **Step 1: Write proposeRecordAnalysis tests**
+- [ ] **Langkah 1: Tulis test proposeRecordAnalysis**
 
-Add to test file:
+Tambahkan ke file test:
 
 ```solidity
 function test_ProposeRecordAnalysis() public {
@@ -1633,7 +1633,7 @@ function test_ProposeRecordAnalysis() public {
     vm.prank(owner1);
     uint256 txIndex = governor.proposeRecordAnalysis(cid, 1, analyzedWallet);
 
-    // Proposal created in MultiSigWallet
+    // Proposal dibuat di MultiSigWallet
     assertEq(wallet.getTransactionCount(), 1);
     (address to, uint256 value,, bool executed,) = wallet.getTransaction(txIndex);
     assertEq(to, address(registry));
@@ -1649,15 +1649,15 @@ function test_ProposeRecordAnalysis_RevertIf_NotOwner() public {
 }
 ```
 
-- [ ] **Step 2: Run tests — verify pass**
+- [ ] **Langkah 2: Jalankan test — verifikasi lulus**
 
 ```bash
 cd contracts && forge test --match-test test_ProposeRecordAnalysis -vvv
 ```
 
-Expected: 2 PASS.
+Ekspektasi: 2 PASS.
 
-- [ ] **Step 3: Commit**
+- [ ] **Langkah 3: Commit**
 
 ```bash
 git add contracts/test/governance/MultiSigGovernor.t.sol
@@ -1666,14 +1666,14 @@ git commit -m "test: add proposeRecordAnalysis tests for MultiSigGovernor"
 
 ---
 
-### Task 16: MultiSigGovernor — proposeMintSBT tests
+### Task 16: MultiSigGovernor — test proposeMintSBT
 
-**Files:**
-- Modify: `contracts/test/governance/MultiSigGovernor.t.sol`
+**File:**
+- Modifikasi: `contracts/test/governance/MultiSigGovernor.t.sol`
 
-- [ ] **Step 1: Write proposeMintSBT tests**
+- [ ] **Langkah 1: Tulis test proposeMintSBT**
 
-Add to test file:
+Tambahkan ke file test:
 
 ```solidity
 function test_ProposeMintSBT() public {
@@ -1697,15 +1697,15 @@ function test_ProposeMintSBT_RevertIf_NotOwner() public {
 }
 ```
 
-- [ ] **Step 2: Run tests — verify pass**
+- [ ] **Langkah 2: Jalankan test — verifikasi lulus**
 
 ```bash
 cd contracts && forge test --match-test test_ProposeMintSBT -vvv
 ```
 
-Expected: 2 PASS.
+Ekspektasi: 2 PASS.
 
-- [ ] **Step 3: Commit**
+- [ ] **Langkah 3: Commit**
 
 ```bash
 git add contracts/test/governance/MultiSigGovernor.t.sol
@@ -1714,12 +1714,12 @@ git commit -m "test: add proposeMintSBT tests for MultiSigGovernor"
 
 ---
 
-### Task 17: MultiSigGovernor — integration: execute recordAnalysis through multi-sig
+### Task 17: MultiSigGovernor — integration: execute recordAnalysis melalui multi-sig
 
-**Files:**
-- Create: `contracts/test/governance/MultiSigGovernor.integration.t.sol`
+**File:**
+- Buat: `contracts/test/governance/MultiSigGovernor.integration.t.sol`
 
-- [ ] **Step 1: Write full integration test**
+- [ ] **Langkah 1: Tulis integration test penuh**
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -1759,24 +1759,24 @@ contract MultiSigGovernorIntegrationTest is Test {
         uint256 chainId = 1;
         address analyzedWallet = address(0x50);
 
-        // 1. Owner1 proposes recordAnalysis via governor
+        // 1. Owner1 mengusulkan recordAnalysis via governor
         vm.prank(owner1);
         uint256 txIndex = governor.proposeRecordAnalysis(cid, chainId, analyzedWallet);
 
-        // 2. Only 1 of 2 confirmed → cannot execute
+        // 2. Hanya 1 dari 2 yang konfirmasi → tidak bisa execute
         vm.prank(owner1);
         vm.expectRevert(MultiSigWallet.NotEnoughConfirmations.selector);
         wallet.executeTransaction(txIndex);
 
-        // 3. Owner2 confirms
+        // 3. Owner2 konfirmasi
         vm.prank(owner2);
         wallet.confirmTransaction(txIndex);
 
-        // 4. Execute → recordAnalysis is called on registry
+        // 4. Execute → recordAnalysis dipanggil di registry
         vm.prank(owner1);
         wallet.executeTransaction(txIndex);
 
-        // 5. Verify: analysis was recorded
+        // 5. Verifikasi: analisis tercatat
         assertEq(registry.analysisCount(analyzedWallet), 1);
         assertEq(registry.totalAnalyses(), 1);
 
@@ -1789,11 +1789,11 @@ contract MultiSigGovernorIntegrationTest is Test {
         bytes32 cid = bytes32(uint256(0x7890));
         address recipient = address(0x60);
 
-        // 1. Owner1 proposes mint SBT
+        // 1. Owner1 mengusulkan mint SBT
         vm.prank(owner1);
         uint256 txIndex = governor.proposeMintSBT(recipient, analysisId, cid);
 
-        // 2. Owner2 confirms
+        // 2. Owner2 konfirmasi
         vm.prank(owner2);
         wallet.confirmTransaction(txIndex);
 
@@ -1801,7 +1801,7 @@ contract MultiSigGovernorIntegrationTest is Test {
         vm.prank(owner3);
         wallet.executeTransaction(txIndex);
 
-        // 4. Verify: SBT minted to recipient
+        // 4. Verifikasi: SBT di-mint ke penerima
         assertEq(sbt.balanceOf(recipient), 1);
         assertEq(sbt.tokenAnalysis(1), analysisId);
         assertEq(sbt.tokenCid(1), cid);
@@ -1812,7 +1812,7 @@ contract MultiSigGovernorIntegrationTest is Test {
         bytes32 cid = bytes32(uint256(0x2222));
         address recipient = address(0x70);
 
-        // Mint first
+        // Mint pertama
         vm.prank(owner1);
         uint256 tx1 = governor.proposeMintSBT(recipient, analysisId, cid);
         vm.prank(owner2);
@@ -1820,7 +1820,7 @@ contract MultiSigGovernorIntegrationTest is Test {
         vm.prank(owner1);
         wallet.executeTransaction(tx1);
 
-        // Try mint again same (should revert)
+        // Coba mint lagi sama (harus revert)
         vm.prank(owner1);
         uint256 tx2 = governor.proposeMintSBT(recipient, analysisId, cid);
         vm.prank(owner2);
@@ -1835,15 +1835,15 @@ contract MultiSigGovernorIntegrationTest is Test {
 
 File: `contracts/test/governance/MultiSigGovernor.integration.t.sol`
 
-- [ ] **Step 2: Run integration tests**
+- [ ] **Langkah 2: Jalankan integration test**
 
 ```bash
 cd contracts && forge test --match-contract MultiSigGovernorIntegrationTest -vvv
 ```
 
-Expected: 3 PASS.
+Ekspektasi: 3 PASS.
 
-- [ ] **Step 3: Commit**
+- [ ] **Langkah 3: Commit**
 
 ```bash
 git add contracts/test/governance/MultiSigGovernor.integration.t.sol
@@ -1852,35 +1852,35 @@ git commit -m "test: add full governance flow integration tests (recordAnalysis 
 
 ---
 
-### Task 18: Run complete test suite + final coverage check
+### Task 18: Jalankan seluruh test suite + cek coverage akhir
 
-**Files:**
-- None (verification only)
+**File:**
+- Tidak ada (hanya verifikasi)
 
-- [ ] **Step 1: Run all tests**
+- [ ] **Langkah 1: Jalankan semua test**
 
 ```bash
 cd contracts && forge test -vvv
 ```
 
-Expected: all tests PASS (~40 tests across all contracts).
+Ekspektasi: semua test PASS (~40 test di seluruh kontrak).
 
-- [ ] **Step 2: Run coverage**
+- [ ] **Langkah 2: Jalankan coverage**
 
 ```bash
 cd contracts && forge coverage --report summary
 ```
 
-- [ ] **Step 3: Verify no regression on existing contracts**
+- [ ] **Langkah 3: Verifikasi tidak ada regresi pada kontrak existing**
 
 ```bash
 cd contracts && forge test --match-contract AnalysisRegistryTest -vvv
 cd contracts && forge test --match-contract ReportSBTTest -vvv
 ```
 
-Expected: all existing tests PASS.
+Ekspektasi: semua test existing PASS.
 
-- [ ] **Step 4: Commit**
+- [ ] **Langkah 4: Commit**
 
 ```bash
 git add .
@@ -1889,12 +1889,12 @@ git commit -m "chore: verify complete test suite — all contracts passing with 
 
 ---
 
-### Task 19: Create deploy script for MultiSigWallet + MultiSigGovernor
+### Task 19: Buat deploy script untuk MultiSigWallet + MultiSigGovernor
 
-**Files:**
-- Create: `contracts/script/DeployMultiSig.s.sol`
+**File:**
+- Buat: `contracts/script/DeployMultiSig.s.sol`
 
-- [ ] **Step 1: Write deploy script**
+- [ ] **Langkah 1: Tulis deploy script**
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -1908,15 +1908,15 @@ import {ReportSBT} from "../src/ReportSBT.sol";
 
 /**
  * @title DeployMultiSig
- * @notice Deploy MultiSigWallet + MultiSigGovernor, wire up with existing AnalysisRegistry & ReportSBT.
+ * @notice Deploy MultiSigWallet + MultiSigGovernor, hubungkan dengan AnalysisRegistry & ReportSBT yang sudah ada.
  *
- * Usage:
+ * Penggunaan:
  *   # 1. Set env vars
  *   export DEPLOYER_PRIVATE_KEY=<key>
  *   export MULTISIG_OWNERS="0xOwner1,0xOwner2,0xOwner3"
  *   export MULTISIG_THRESHOLD=2
- *   export ANALYSIS_REGISTRY=<existing-deployed-address>
- *   export REPORT_SBT=<existing-deployed-address>
+ *   export ANALYSIS_REGISTRY=<alamat-deployed-existing>
+ *   export REPORT_SBT=<alamat-deployed-existing>
  *
  *   # 2. Deploy
  *   forge script script/DeployMultiSig.s.sol:DeployMultiSig \
@@ -1928,7 +1928,7 @@ contract DeployMultiSig is Script {
     function run() external {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
 
-        // Parse comma-separated owners from env
+        // Parse pemilik yang dipisah koma dari env
         string memory ownersRaw = vm.envString("MULTISIG_OWNERS");
         address[] memory owners = parseAddresses(ownersRaw);
 
@@ -1952,10 +1952,10 @@ contract DeployMultiSig is Script {
         console2.log("MultiSigGovernor deployed at:", address(governor));
 
         console2.log("---");
-        console2.log("Next steps:");
-        console2.log("1. Transfer AnalysisRegistry ownership to governor:");
+        console2.log("Langkah selanjutnya:");
+        console2.log("1. Transfer kepemilikan AnalysisRegistry ke governor:");
         console2.log("   cast send %s 'transferOwnership(address)' %s", existingRegistry, address(governor));
-        console2.log("2. Transfer ReportSBT ownership to governor:");
+        console2.log("2. Transfer kepemilikan ReportSBT ke governor:");
         console2.log("   cast send %s 'transferOwnership(address)' %s", existingSBT, address(governor));
 
         vm.stopBroadcast();
@@ -1989,15 +1989,15 @@ contract DeployMultiSig is Script {
 
 File: `contracts/script/DeployMultiSig.s.sol`
 
-- [ ] **Step 2: Verify it compiles**
+- [ ] **Langkah 2: Verifikasi kompilasi**
 
 ```bash
 cd contracts && forge build
 ```
 
-Expected: compile success.
+Ekspektasi: compile success.
 
-- [ ] **Step 3: Commit**
+- [ ] **Langkah 3: Commit**
 
 ```bash
 git add contracts/script/DeployMultiSig.s.sol
@@ -2006,18 +2006,18 @@ git commit -m "feat: add deploy script for MultiSigWallet + MultiSigGovernor"
 
 ---
 
-### Task 20: Dry-run deploy on local anvil
+### Task 20: Dry-run deploy di anvil lokal
 
-**Files:**
-- None (execution only)
+**File:**
+- Tidak ada (hanya eksekusi)
 
-- [ ] **Step 1: Start anvil in background and deploy locally**
+- [ ] **Langkah 1: Jalankan anvil di background dan deploy lokal**
 
 ```bash
 # Terminal 1
 anvil &
 
-# Terminal 2 — deploy existing contracts first
+# Terminal 2 — deploy kontrak existing dulu
 cd contracts
 
 # Deploy AnalysisRegistry + ReportSBT
@@ -2026,53 +2026,53 @@ forge script script/Deploy.s.sol:Deploy \
   --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
   --broadcast
 
-# Get deployed addresses from output, then deploy MultiSig
+# Dapatkan alamat deployed dari output, lalu deploy MultiSig
 MULTISIG_OWNERS="0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,0x70997970C51812dc3A010C7d01b50e0d17dc79C8,0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC" \
 MULTISIG_THRESHOLD=2 \
-ANALYSIS_REGISTRY=<addr-from-above> \
-REPORT_SBT=<addr-from-above> \
+ANALYSIS_REGISTRY=<addr-dari-atas> \
+REPORT_SBT=<addr-dari-atas> \
 DEPLOYER_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
 forge script script/DeployMultiSig.s.sol:DeployMultiSig \
   --rpc-url http://localhost:8545 \
   --broadcast
 ```
 
-- [ ] **Step 2: Verify deployment via cast**
+- [ ] **Langkah 2: Verifikasi deployment via cast**
 
 ```bash
-# Check contract state
+# Cek state kontrak
 cast call <MULTISIG_ADDRESS> "getOwners()" --rpc-url http://localhost:8545
 cast call <MULTISIG_ADDRESS> "required()" --rpc-url http://localhost:8545
 ```
 
-Expected: returns owners array and threshold.
+Ekspektasi: mengembalikan array owners dan threshold.
 
-- [ ] **Step 3: Kill anvil**
+- [ ] **Langkah 3: Matikan anvil**
 
 ```bash
 kill %1
 ```
 
-- [ ] **Step 4: Commit** (if any .env changes made)
+- [ ] **Langkah 4: Commit** (jika ada perubahan .env)
 
-No code changes needed.
+Tidak ada perubahan kode yang diperlukan.
 
 ---
 
-## Verification Checklist
+## Checklist Verifikasi
 
-Sebelum menyatakan implementation selesai, pastikan:
+Sebelum menyatakan implementasi selesai, pastikan:
 
-- [ ] `forge test -vvv` — all tests PASS
-- [ ] `forge coverage --report summary` — ≥ 95% line coverage
-- [ ] Existing tests (AnalysisRegistry, ReportSBT) no regression
-- [ ] Deploy script compiles (`forge build`)
+- [ ] `forge test -vvv` — semua test PASS
+- [ ] `forge coverage --report summary` — cakupan baris ≥ 95%
+- [ ] Test existing (AnalysisRegistry, ReportSBT) tidak ada regresi
+- [ ] Deploy script terkompilasi (`forge build`)
 - [ ] Semua custom errors digunakan (cek `grep "revert " src/multisig/MultiSigWallet.sol` — tidak ada string revert)
 
 ---
 
-## Follow-up Plans
+## Rencana Lanjutan
 
 Setelah M1-M4 selesai:
-- **M5** (Next.js frontend) — halaman `/wallet`, WAGMI integration, connect wallet, submit/approve/execute UI
-- **M8** (Solana) — Rust/Anchor implementation
+- **M5** (Next.js frontend) — halaman `/wallet`, integrasi WAGMI, connect wallet, UI submit/approve/execute
+- **M8** (Solana) — implementasi Rust/Anchor

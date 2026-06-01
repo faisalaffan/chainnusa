@@ -1,61 +1,61 @@
-# Blockchain 101 — for ChainNusa
+# Blockchain 101 — untuk ChainNusa
 
-Short and practical. For deep theory, see references at the end.
+Singkat dan praktis. Untuk teori mendalam, lihat referensi di bagian akhir.
 
-## 1. EVM-compatible chains
+## 1. Chain yang kompatibel dengan EVM
 
 | Chain | ID | Block time | Native | Use case |
 |---|---|---|---|---|
 | Ethereum | 1 | ~12s | ETH | DeFi blue chips, settlement |
-| BNB Smart Chain | 56 | ~3s | BNB | High-volume retail |
+| BNB Smart Chain | 56 | ~3s | BNB | Retail volume tinggi |
 | Polygon PoS | 137 | ~2s | MATIC | NFT, gaming |
-| Arbitrum One | 42161 | ~250ms | ETH | L2 rollup, low fee |
+| Arbitrum One | 42161 | ~250ms | ETH | L2 rollup, biaya rendah |
 | Base | 8453 | ~2s | ETH | Coinbase L2 |
 | Optimism | 10 | ~2s | ETH | OP-stack rollup |
 
-ChainNusa uses EVM only — all transactions are ABI-compatible, differing only by `chainId` + RPC.
+ChainNusa hanya menggunakan EVM — semua transaksi kompatibel ABI, hanya berbeda pada `chainId` + RPC.
 
-## 2. Account types
+## 2. Tipe akun
 
-- **EOA (Externally Owned Account)** — controlled by private key. Regular user wallet.
-- **Contract Account** — bytecode, called via tx. Cannot initiate tx itself.
+- **EOA (Externally Owned Account)** — dikendalikan oleh private key. Wallet user biasa.
+- **Contract Account** — bytecode, dipanggil melalui tx. Tidak dapat memulai tx sendiri.
 
-ChainNusa distinguishes EOA vs contract via heuristic: if `tx.input` is non-empty or the address has bytecode (`eth_getCode`), counterparty = contract.
+ChainNusa membedakan EOA vs kontrak melalui heuristik: jika `tx.input` tidak kosong atau address memiliki bytecode (`eth_getCode`), counterparty = kontrak.
 
-## 3. Transaction anatomy
+## 3. Anatomi transaksi
 
 ```
 { from, to, value, data (input), gas, gasPrice, nonce, hash, blockNumber }
 ```
 
-- `value` = native amount (wei, 1 ETH = 1e18 wei).
-- `data` (or `input`) = function selector (4 bytes) + ABI-encoded args.
-- `methodId` = first 4 bytes of `keccak256(signature)`. Example: `0x38ed1739` = `swapExactTokensForTokens`. ChainNusa uses this for coarse classification.
+- `value` = jumlah native (wei, 1 ETH = 1e18 wei).
+- `data` (atau `input`) = function selector (4 bytes) + argumen yang di-encode ABI.
+- `methodId` = 4 byte pertama dari `keccak256(signature)`. Contoh: `0x38ed1739` = `swapExactTokensForTokens`. ChainNusa menggunakan ini untuk klasifikasi kasar.
 
-## 4. ERC-20 Transfer event
+## 4. Event Transfer ERC-20
 
 ```
 event Transfer(address indexed from, address indexed to, uint256 value);
 keccak256 → 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
 ```
 
-Because `from` & `to` are indexed, they can be filtered via `eth_getLogs` topic 1/2. That's why `RpcProvider` (`apps/web/src/lib/providers/data/rpc.ts`) doesn't need Etherscan for token history.
+Karena `from` & `to` di-index, mereka dapat difilter melalui topic 1/2 `eth_getLogs`. Itulah mengapa `RpcProvider` (`apps/web/src/lib/providers/data/rpc.ts`) tidak memerlukan Etherscan untuk riwayat token.
 
-## 5. Cryptography for wallet auth (SIWE)
+## 5. Kriptografi untuk auth wallet (SIWE)
 
 Sign-in with Ethereum (EIP-4361):
 
-1. Server generates nonce + domain.
-2. Client builds human-readable message → wallet signs via `personal_sign`.
-3. Server verifies signature using `ecrecover` → gets address → matches with claim.
+1. Server menghasilkan nonce + domain.
+2. Client membuat pesan yang dapat dibaca manusia → wallet menandatangani via `personal_sign`.
+3. Server memverifikasi tanda tangan menggunakan `ecrecover` → mendapatkan address → mencocokkan dengan klaim.
 
-Source of truth: Ethereum address = lower 160 bits of `keccak256(public_key)`.
+Sumber kebenaran: Alamat Ethereum = 160 bit rendah dari `keccak256(public_key)`.
 
 ## 6. Soulbound Token (SBT)
 
-An NFT (ERC-721) that is **non-transferable**. Implementation: override `_update` / `_beforeTokenTransfer` in OpenZeppelin v5 to revert except mint/burn. Suitable for **identity reports / credentials** that should not be traded.
+NFT (ERC-721) yang **tidak dapat ditransfer**. Implementasi: override `_update` / `_beforeTokenTransfer` di OpenZeppelin v5 untuk revert kecuali mint/burn. Cocok untuk **laporan identitas / kredensial** yang tidak boleh diperjualbelikan.
 
-ChainNusa uses SBT for: "wallet `0xabc...` has an analysis report with IPFS CID X at block N." Permanent proof, cannot be flipped.
+ChainNusa menggunakan SBT untuk: "wallet `0xabc...` memiliki laporan analisis dengan IPFS CID X di blok N." Bukti permanen, tidak dapat dibalik.
 
 ## 7. Oracle (Chainlink Price Feed)
 
@@ -64,32 +64,32 @@ AggregatorV3Interface(0x5147eA642CAEF7BD9c1265AadcA78f997AbB9649)
   .latestRoundData() returns (int256 answer, ...);
 ```
 
-For converting gas spent to USD. Always check `updatedAt` to avoid stale data.
+Untuk mengonversi gas yang digunakan ke USD. Selalu periksa `updatedAt` untuk menghindari data basi.
 
 ## 8. L2 / scaling
 
-- **Optimistic rollup** (Arbitrum, Optimism, Base): assumes tx is valid, 7-day window for fraud proof.
-- **ZK rollup** (zkSync, Linea, Scroll): validity proof on-chain, mathematically instant finality.
+- **Optimistic rollup** (Arbitrum, Optimism, Base): mengasumsikan tx valid, jendela 7 hari untuk fraud proof.
+- **ZK rollup** (zkSync, Linea, Scroll): bukti validitas on-chain, finalitas instan secara matematis.
 
-ChainNusa deploys contracts to Sepolia (L1 testnet) + Arbitrum Sepolia + Base Sepolia for multi-rollup demo.
+ChainNusa menyebarkan kontrak ke Sepolia (L1 testnet) + Arbitrum Sepolia + Base Sepolia untuk demonstrasi multi-rollup.
 
-## 9. Decentralized storage
+## 9. Penyimpanan terdesentralisasi
 
-- **IPFS**: content-addressed (CID = `bafy...`). No persistence guarantee unless pinned.
-- **Pinata / web3.storage**: pinning services. Free tier ~ 1GB.
-- **Arweave**: pay once, store permanently. Suitable for archives.
+- **IPFS**: content-addressed (CID = `bafy...`). Tidak ada jaminan persistensi kecuali di-pin.
+- **Pinata / web3.storage**: layanan pinning. Tier gratis ~ 1GB.
+- **Arweave**: bayar sekali, simpan permanen. Cocok untuk arsip.
 
-ChainNusa stores analysis JSON on IPFS via Pinata, CID emitted on-chain via `AnalysisRegistry.recordAnalysis`.
+ChainNusa menyimpan JSON analisis di IPFS via Pinata, CID dipancarkan on-chain melalui `AnalysisRegistry.recordAnalysis`.
 
-## 10. Gas economics
+## 10. Ekonomi gas
 
-- 1 gas unit = EVM computation unit (ETH transfer = 21000 gas; first SSTORE = 22100).
-- Total fee = `gasUsed * gasPrice` (legacy) or `gasUsed * (baseFee + priorityFee)` (EIP-1559).
-- ChainNusa calculates `gasSpent` only when wallet = `from`.
+- 1 unit gas = unit komputasi EVM (transfer ETH = 21000 gas; SSTORE pertama = 22100).
+- Total biaya = `gasUsed * gasPrice` (legacy) atau `gasUsed * (baseFee + priorityFee)` (EIP-1559).
+- ChainNusa menghitung `gasSpent` hanya jika wallet = `from`.
 
-## References
+## Referensi
 
-- Mastering Ethereum (Antonopoulos & Wood) — open access book.
+- Mastering Ethereum (Antonopoulos & Wood) — buku akses terbuka.
 - EIPs: https://eips.ethereum.org
 - Foundry Book: https://book.getfoundry.sh
 - OpenZeppelin Contracts docs: https://docs.openzeppelin.com/contracts

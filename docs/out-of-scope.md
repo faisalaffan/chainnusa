@@ -1,45 +1,45 @@
-# Out of Scope (Intentional)
+# Di Luar Cakupan (Disengaja)
 
-List of topics present in reference roadmaps but **not implemented** in ChainNusa, with explicit reasons. Goal: honest portfolio, not claiming to cover everything.
+Daftar topik yang ada di roadmap referensi tetapi **tidak diimplementasikan** di ChainNusa, dengan alasan eksplisit. Tujuan: portofolio yang jujur, tidak mengklaim mencakup semuanya.
 
 ## Blockchain Roadmap
 
-| Topic | Reason skipped |
+| Topik | Alasan dilewati |
 |---|---|
-| **Substrate / non-EVM** | Project spec = EVM wallet analysis. Polkadot/Solana have fundamentally different architecture, need a separate project. |
-| **zkSNARK / Halo2 / Circom** | No privacy-preserving use case in public analysis domain. Suitable for private voting, identity, etc. |
-| **Bitcoin Core (UTXO model)** | Account model totally different from EVM (UTXO vs account-based). |
-| **MEV bot live deployment** | Ethically questionable; analyzing MEV = OK, operating one = different. |
-| **Token launch / ICO** | Not relevant to an analyzer. |
+| **Substrate / non-EVM** | Spesifikasi proyek = analisis wallet EVM. Polkadot/Solana memiliki arsitektur yang fundamentally berbeda, memerlukan proyek terpisah. |
+| **zkSNARK / Halo2 / Circom** | Tidak ada use case privasi dalam domain analisis publik. Cocok untuk voting privat, identitas, dll. |
+| **Bitcoin Core (model UTXO)** | Model akun sangat berbeda dari EVM (UTXO vs account-based). |
+| **Deploy live MEV bot** | Secara etis dipertanyakan; menganalisis MEV = OK, menjalankannya = berbeda. |
+| **Token launch / ICO** | Tidak relevan untuk analyzer. |
 
 ## Machine Learning Roadmap
 
-| Topic | Reason skipped |
+| Topik | Alasan dilewati |
 |---|---|
-| **GAN** | No generative use case in this domain. Wallet feature space is tabular + sequence. |
-| **Reinforcement Learning (production)** | Toy notebook OK; real RL for gas bidding = expensive & risky mainnet experiment. |
-| **GraphSAGE / GNN production** | Experiment notebook `04_gnn_wallet_graph.ipynb` may be added (deferred), but production graph DB (Neo4j) = separate scope. |
-| **AutoML platform end-to-end** | MLflow + manual sweeps sufficient to demonstrate skill. |
-| **Federated Learning** | No multi-tenant dataset. |
+| **GAN** | Tidak ada use case generatif di domain ini. Ruang fitur wallet bersifat tabular + sequence. |
+| **Reinforcement Learning (produksi)** | Notebook mainan OK; RL nyata untuk gas bidding = eksperimen mainnet yang mahal & berisiko. |
+| **GraphSAGE / GNN produksi** | Notebook eksperimen `04_gnn_wallet_graph.ipynb` mungkin ditambahkan (ditunda), tetapi graph DB produksi (Neo4j) = cakupan terpisah. |
+| **Platform AutoML end-to-end** | MLflow + manual sweep sudah cukup untuk menunjukkan kemampuan. |
+| **Federated Learning** | Tidak ada dataset multi-tenant. |
 
 ## AI & Data Scientist Roadmap
 
-| Topic | Reason skipped |
+| Topik | Alasan dilewati |
 |---|---|
-| **Advanced econometrics (CUPED, RDD, IV)** | Analyzer domain has no causal experiment. Keep observational + ARIMA. |
-| **A/B testing platform** | No user-facing product with variant testing. |
-| **Real-time streaming (Kafka + Flink)** | Batch pipeline is sufficient. Streaming = project pivot. |
-| **NLP Indonesian sentiment** | Not relevant; on-chain analysis does not consume user-generated text. |
+| **Ekonometrik lanjutan (CUPED, RDD, IV)** | Domain analyzer tidak memiliki eksperimen kausal. Tetap menggunakan observational + ARIMA. |
+| **Platform A/B testing** | Tidak ada produk berhadapan pengguna dengan pengujian varian. |
+| **Streaming real-time (Kafka + Flink)** | Batch pipeline sudah cukup. Streaming = pivot proyek. |
+| **NLP sentimen Bahasa Indonesia** | Tidak relevan; analisis on-chain tidak mengonsumsi teks buatan pengguna. |
 
 ## Engineering / Infra
 
-| Topic | Reason skipped |
+| Topik | Alasan dilewati |
 |---|---|
-| **Kubernetes production deploy** | docker-compose sufficient for demo. K8s = complexity without concrete portfolio benefit. |
-| **Multi-region failover** | Single-region sufficient. |
-| **Blue-green deploy** | Single instance OK. |
-| **Service mesh (Istio)** | Overkill. |
+| **Deploy produksi Kubernetes** | docker-compose cukup untuk demo. K8s = kompleksitas tanpa manfaat portofolio konkret. |
+| **Failover multi-region** | Single-region sudah cukup. |
+| **Deploy blue-green** | Instance tunggal OK. |
+| **Service mesh (Istio)** | Berlebihan. |
 
-## Notes
+## Catatan
 
-This list **can be moved to "in scope"** at any time if concrete justification arises. Document purpose: be honest about boundaries, avoid an incredible "I can do everything" claim.
+Daftar ini **dapat dipindahkan ke "dalam cakupan"** kapan saja jika ada justifikasi konkret. Tujuan dokumen: jujur tentang batasan, menghindari klaim "saya bisa melakukan segalanya" yang tidak masuk akal.

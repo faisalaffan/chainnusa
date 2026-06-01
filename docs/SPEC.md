@@ -1,30 +1,30 @@
-# Audit Coverage — 3 Roadmaps vs ChainNusa
+# Cakupan Audit — 3 Roadmaps vs ChainNusa
 
-First, summarize what is **already** vs **not yet** covered. Percentage = estimated roadmap nodes touched by the current project.
+Pertama, rangkuman apa yang **sudah** vs **belum** tercakup. Persentase = estimasi node roadmap yang tersentuh oleh proyek saat ini.
 
-| Roadmap                 | Current Coverage | Notes                                                                                                                                        |
-| ----------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Blockchain**          | ~30%             | On-chain data consumption (EVM, Etherscan, ERC-20 parsing, dApp UI) **exists**. Smart contracts, security, deployment, oracles, L2/scaling **not yet**. |
-| **Machine Learning**    | ~5%              | Only **calling LLM APIs** (Claude/Ollama). No math foundations, no training, no model evaluation.                                              |
-| **AI & Data Scientist** | ~10%             | Data pipeline exists, but no EDA, inferential statistics, econometrics, MLOps.                                                                |
+| Roadmap                 | Cakupan Saat Ini | Catatan                                                                                                                                        |
+| ----------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Blockchain**          | ~30%             | Konsumsi data on-chain (EVM, Etherscan, parsing ERC-20, dApp UI) **sudah ada**. Smart contract, keamanan, deployment, oracle, L2/scaling **belum**. |
+| **Machine Learning**    | ~5%              | Hanya **memanggil LLM API** (Claude/Ollama). Belum ada fondasi matematika, belum ada training, belum ada evaluasi model.                         |
+| **AI & Data Scientist** | ~10%             | Pipeline data sudah ada, tapi belum ada EDA, statistik inferensial, ekonometrik, MLOps.                                                         |
 
-**Conclusion:** not yet covering everything. If the goal = **cover all three roadmaps**, the project needs to be extended into a _full-stack on-chain intelligence platform_ (data + ML + smart contracts).
+**Kesimpulan:** belum mencakup semuanya. Jika tujuannya = **mencakup ketiga roadmap**, proyek ini perlu diperluas menjadi _platform intelijen on-chain full-stack_ (data + ML + smart contract).
 
-Below is the complete specification.
-
----
-
-# 📐 SPEC v2 — ChainNusa Full Coverage Edition
-
-## 1. Vision & Positioning
-
-> **ChainNusa** = on-chain wallet intelligence platform — combining **dApp** (Web3 layer), **ML pipeline** (data science layer), and **AI summary** (LLM layer). One project, three scientific disciplines.
-
-Primary output for users: wallet risk score, wallet type classification, anomaly detection, activity prediction, natural language summary, **on-chain proof of analysis**.
+Di bawah ini adalah spesifikasi lengkap.
 
 ---
 
-## 2. Target Architecture (Multi-Service)
+# 📐 SPEC v2 — Edisi Cakupan Penuh ChainNusa
+
+## 1. Visi & Positioning
+
+> **ChainNusa** = platform intelijen wallet on-chain — menggabungkan **dApp** (lapisan Web3), **ML pipeline** (lapisan data science), dan **AI summary** (lapisan LLM). Satu proyek, tiga disiplin ilmu.
+
+Output utama bagi pengguna: skor risiko wallet, klasifikasi tipe wallet, deteksi anomali, prediksi aktivitas, ringkasan bahasa alami, **bukti analisis on-chain**.
+
+---
+
+## 2. Arsitektur Target (Multi-Service)
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
@@ -54,116 +54,116 @@ Primary output for users: wallet risk score, wallet type classification, anomaly
 
 ---
 
-## 3. Complete Modules per Roadmap
+## 3. Modul Lengkap per Roadmap
 
-### 3.1 🔗 Blockchain Roadmap — target coverage 90%
+### 3.1 🔗 Roadmap Blockchain — target cakupan 90%
 
-| Roadmap Node                          | Project Module                                                                                                             | Status   |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------- |
-| Basic / General Blockchain            | "Education" section in UI + documentation `/docs/blockchain-101.md`                                                        | New      |
-| EVM Chains (ETH/BSC/Polygon/Arbitrum) | `src/lib/chains.ts` (extend to 6 chains)                                                                                   | Extend   |
-| Cryptography (hashing, signing)       | Wallet sign-in (SIWE) + verify signature server-side                                                                       | New      |
-| Cryptowallets                         | Connect via WalletConnect/MetaMask (`wagmi`)                                                                               | New      |
-| Smart Contracts (Solidity)            | `contracts/AnalysisRegistry.sol`, `contracts/ReportSBT.sol` (Soulbound Token for analysis)                                  | New      |
-| Smart Contract Frameworks             | **Foundry** (test + deploy)                                                                                                | New      |
-| Smart Contract Testing                | `forge test` (unit + invariant + fuzz)                                                                                     | New      |
-| Smart Contract Security               | Audit checklist + run **Slither** + **Mythril** in CI                                                                      | New      |
-| Oracles                               | Chainlink Price Feed for USD conversion in analysis                                                                        | New      |
-| L2 / Scaling                          | Deploy contract to **Arbitrum Sepolia** + **Base Sepolia** testnet                                                         | New      |
-| Decentralized Storage                 | Store AI summary JSON on **IPFS** (via Pinata/web3.storage), CID emitted on-chain                                          | New      |
-| Node-as-a-Service                     | Use **Alchemy** / **Infura** RPC (env-configurable)                                                                        | Extend   |
-| dApps Frontend                        | React + Vue (optional) — currently React only                                                                              | Existing |
-| Client Library                        | Already using `viem`; add `ethers` for contract write demo                                                                 | Extend   |
-| Applicability (DeFi/NFT)              | Soulbound NFT report = real NFT use-case                                                                                   | New      |
-| Version Control                       | Git + GitHub + Conventional Commits                                                                                        | Existing |
+| Node Roadmap                          | Modul Proyek                                                                                                            | Status   |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------- |
+| Basic / General Blockchain            | Bagian "Education" di UI + dokumentasi `/docs/blockchain-101.md`                                                        | Baru     |
+| EVM Chains (ETH/BSC/Polygon/Arbitrum) | `src/lib/chains.ts` (perluas ke 6 chain)                                                                                | Perluas  |
+| Cryptography (hashing, signing)       | Sign-in wallet (SIWE) + verifikasi signature di server                                                                  | Baru     |
+| Cryptowallets                         | Konek via WalletConnect/MetaMask (`wagmi`)                                                                              | Baru     |
+| Smart Contracts (Solidity)            | `contracts/AnalysisRegistry.sol`, `contracts/ReportSBT.sol` (Soulbound Token untuk analisis)                             | Baru     |
+| Smart Contract Frameworks             | **Foundry** (test + deploy)                                                                                             | Baru     |
+| Smart Contract Testing                | `forge test` (unit + invariant + fuzz)                                                                                  | Baru     |
+| Smart Contract Security               | Checklist audit + jalankan **Slither** + **Mythril** di CI                                                              | Baru     |
+| Oracles                               | Chainlink Price Feed untuk konversi USD dalam analisis                                                                  | Baru     |
+| L2 / Scaling                          | Deploy kontrak ke **Arbitrum Sepolia** + **Base Sepolia** testnet                                                       | Baru     |
+| Decentralized Storage                 | Simpan ringkasan JSON AI ke **IPFS** (via Pinata/web3.storage), CID dipancarkan on-chain                                | Baru     |
+| Node-as-a-Service                     | Gunakan **Alchemy** / **Infura** RPC (dapat dikonfigurasi via env)                                                      | Perluas  |
+| dApps Frontend                        | React + Vue (opsional) — saat ini hanya React                                                                           | Existing |
+| Client Library                        | Sudah menggunakan `viem`; tambah `ethers` untuk demo write kontrak                                                      | Perluas  |
+| Applicability (DeFi/NFT)              | Laporan Soulbound NFT = use-case NFT nyata                                                                              | Baru     |
+| Version Control                       | Git + GitHub + Conventional Commits                                                                                    | Existing |
 
-### 3.2 🤖 Machine Learning Roadmap — target coverage 80%
+### 3.2 🤖 Roadmap Machine Learning — target cakupan 80%
 
-ML moves to a **separate Python service** (`/ml-service`). Required because the ML ecosystem = Python.
+ML pindah ke **layanan Python terpisah** (`/ml-service`). Diperlukan karena ekosistem ML = Python.
 
-#### 3.2.1 Mathematical Foundations
+#### 3.2.1 Fondasi Matematika
 
-- Notebook `01_math_foundations.ipynb`: examples of linear algebra (SVD on wallet feature matrix), calculus (gradient descent from scratch for logistic regression), probability (Bayes for naive classification).
+- Notebook `01_math_foundations.ipynb`: contoh aljabar linear (SVD pada matriks fitur wallet), kalkulus (gradient descent dari awal untuk regresi logistik), probabilitas (Bayes untuk klasifikasi naif).
 
-#### 3.2.2 Programming & Libraries
+#### 3.2.2 Pemrograman & Library
 
-- `numpy`, `pandas`, `matplotlib`, `seaborn` in EDA.
-- OOP: `WalletFeatureExtractor`, `ModelRegistry`, `ChainDataLoader` classes.
+- `numpy`, `pandas`, `matplotlib`, `seaborn` di EDA.
+- OOP: kelas `WalletFeatureExtractor`, `ModelRegistry`, `ChainDataLoader`.
 
-#### 3.2.3 Data Collection & Cleaning
+#### 3.2.3 Koleksi & Pembersihan Data
 
-- `etl/extract.py` — fetch from Etherscan/RPC to Postgres.
-- `etl/transform.py` — feature engineering: 30+ features (see §4).
-- `etl/load.py` — versioned dataset → `data/processed/v{n}/`.
-- Preprocessing: scaling (`StandardScaler`), encoding, imputation, **dimensionality reduction** (PCA, t-SNE for visualization).
+- `etl/extract.py` — ambil dari Etherscan/RPC ke Postgres.
+- `etl/transform.py` — rekayasa fitur: 30+ fitur (lihat §4).
+- `etl/load.py` — dataset berversi → `data/processed/v{n}/`.
+- Pra-pemrosesan: scaling (`StandardScaler`), encoding, imputasi, **reduksi dimensionalitas** (PCA, t-SNE untuk visualisasi).
 
 #### 3.2.4 Supervised Learning
 
-- **Wallet Classifier** (multi-class: `exchange`, `dex_trader`, `dex_lp`, `nft_collector`, `bot/mev`, `phishing`, `normal`).
-- Algorithms: Logistic Regression, KNN, SVM, **Random Forest**, **XGBoost**, **Gradient Boosting**.
-- Labels from Etherscan tags + public datasets (Forta, Chainabuse).
+- **Wallet Classifier** (multi-kelas: `exchange`, `dex_trader`, `dex_lp`, `nft_collector`, `bot/mev`, `phishing`, `normal`).
+- Algoritma: Logistic Regression, KNN, SVM, **Random Forest**, **XGBoost**, **Gradient Boosting**.
+- Label dari tag Etherscan + dataset publik (Forta, Chainabuse).
 - Notebook `02_supervised_classification.ipynb`.
 
 #### 3.2.5 Unsupervised Learning
 
-- **Wallet Clustering** (KMeans, DBSCAN, Hierarchical) → wallet segmentation → displayed in UI as "wallet persona".
-- **Anomaly Detection** (Isolation Forest, One-Class SVM) → flag outlier wallets.
-- Dimensionality reduction: PCA + Autoencoder (PyTorch) for 2D visualization.
+- **Wallet Clustering** (KMeans, DBSCAN, Hierarchical) → segmentasi wallet → ditampilkan di UI sebagai "wallet persona".
+- **Anomaly Detection** (Isolation Forest, One-Class SVM) → tandai wallet outlier.
+- Reduksi dimensionalitas: PCA + Autoencoder (PyTorch) untuk visualisasi 2D.
 
-#### 3.2.6 Reinforcement Learning (optional, advanced)
+#### 3.2.6 Reinforcement Learning (opsional, lanjutan)
 
-- Toy env: gas-price bidding agent (Q-Learning) — notebook only, not production.
+- Lingkungan mainan: agen bidding harga gas (Q-Learning) — notebook saja, bukan production.
 
-#### 3.2.7 Model Evaluation
+#### 3.2.7 Evaluasi Model
 
-- Metrics: accuracy, precision, recall, F1, ROC-AUC, log-loss, confusion matrix.
-- Validation: stratified K-Fold CV, temporal train/val/test split.
-- Reproducibility: fixed seeds + dataset hash.
+- Metrik: akurasi, precision, recall, F1, ROC-AUC, log-loss, confusion matrix.
+- Validasi: stratified K-Fold CV, temporal train/val/test split.
+- Reproducibilitas: seed tetap + hash dataset.
 
 #### 3.2.8 Deep Learning
 
-- **LSTM** for _transaction sequence anomaly_ (input: wallet tx sequence → output: anomaly score). PyTorch.
-- **GNN** (optional, GraphSAGE via PyG) for wallet-graph classification → _advanced topic_.
+- **LSTM** untuk _anomali urutan transaksi_ (input: urutan tx wallet → output: skor anomali). PyTorch.
+- **GNN** (opsional, GraphSAGE via PyG) untuk klasifikasi graf wallet → _topik lanjutan_.
 - Notebook `03_lstm_tx_sequence.ipynb` + `04_gnn_wallet_graph.ipynb`.
 
 #### 3.2.9 NLP
 
-- _Risky token name_ classification (BERT-tiny / DistilBERT) → flag scam tokens based on symbol name.
-- Tokenization, embeddings, small fine-tuning.
+- Klasifikasi _nama token berisiko_ (BERT-tiny / DistilBERT) → tandai token scam berdasarkan nama simbol.
+- Tokenisasi, embeddings, fine-tuning kecil.
 
 #### 3.2.10 Explainable AI
 
-- **SHAP** values for wallet classifier, displayed per prediction in UI.
+- Nilai **SHAP** untuk wallet classifier, ditampilkan per prediksi di UI.
 
-### 3.3 📊 AI & Data Scientist Roadmap — target coverage 85%
+### 3.3 📊 Roadmap AI & Data Scientist — target cakupan 85%
 
-| Chapter                   | Project Module                                                                                            |
-| ------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Mathematics               | Notebook §3.2.1                                                                                         |
-| Statistics                | Notebook `05_statistics.ipynb`: hypothesis testing (is bot wallet avg gas > human?), CLT, sampling.     |
-| Econometrics              | Notebook `06_timeseries.ipynb`: ARIMA + Prophet for wallet activity forecast (daily tx count).          |
-| Coding                    | Python + SQL (analytics queries in Postgres). DSA leetcode log optional.                                |
-| Exploratory Data Analysis | Notebook `00_eda.ipynb`: feature distributions, correlations, missing values, outliers, visualizations. |
-| Classic & Advanced ML     | See §3.2.4–3.2.5.                                                                                       |
-| Deep Learning             | §3.2.8                                                                                                  |
-| **MLOps**                 | §3.4 (below)                                                                                           |
+| Bab                      | Modul Proyek                                                                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Matematika               | Notebook §3.2.1                                                                                                                    |
+| Statistik                | Notebook `05_statistics.ipynb`: pengujian hipotesis (apakah rata-rata gas bot wallet > manusia?), CLT, sampling.                    |
+| Ekonometrik              | Notebook `06_timeseries.ipynb`: ARIMA + Prophet untuk forecast aktivitas wallet (hitung tx harian).                                 |
+| Coding                   | Python + SQL (kueri analitik di Postgres). DSA leetcode log opsional.                                                              |
+| Exploratory Data Analysis | Notebook `00_eda.ipynb`: distribusi fitur, korelasi, missing values, outlier, visualisasi.                                          |
+| Classic & Advanced ML    | Lihat §3.2.4–3.2.5.                                                                                                                |
+| Deep Learning            | §3.2.8                                                                                                                             |
+| **MLOps**                | §3.4 (di bawah)                                                                                                                   |
 
-### 3.4 🚀 MLOps Layer (cross-cutting)
+### 3.4 🚀 Lapisan MLOps (lintas-bagian)
 
-- **Containerization**: Dockerfile per service + `docker-compose.yml` (web, ml-service, postgres, minio, mlflow).
+- **Containerization**: Dockerfile per layanan + `docker-compose.yml` (web, ml-service, postgres, minio, mlflow).
 - **CI/CD**: GitHub Actions
   - Web: typecheck + lint + e2e (Playwright).
   - ML: pytest + lint + train-on-PR (smoke).
   - Contracts: `forge test` + Slither.
-- **Experiment Tracking**: **MLflow** server, logging metrics & artifacts per run.
+- **Experiment Tracking**: Server **MLflow**, mencatat metrik & artifact per run.
 - **Model Registry**: MLflow Registry, tag `staging` / `production`.
-- **Model Serving**: FastAPI endpoint `/predict`, load model from registry, return predictions + SHAP.
-- **Monitoring**: Prometheus + Grafana (latency, error rate, simple drift detection).
-- **Data Versioning**: **DVC** for datasets in `data/`.
+- **Model Serving**: Endpoint FastAPI `/predict`, muat model dari registry, kembalikan prediksi + SHAP.
+- **Monitoring**: Prometheus + Grafana (latensi, error rate, deteksi drift sederhana).
+- **Data Versioning**: **DVC** untuk dataset di `data/`.
 
 ---
 
-## 4. Feature Engineering Spec (Wallet → Vector)
+## 4. Spesifikasi Rekayasa Fitur (Wallet → Vector)
 
 Output `WalletFeatureExtractor.extract(address, chain) → dict[str, float]`:
 
@@ -184,7 +184,7 @@ Sequence (DL):   tx_value_series[T], gas_series[T], time_delta_series[T]
 
 ---
 
-## 5. Final Folder Structure
+## 5. Struktur Folder Akhir
 
 ```
 chainnusa/
@@ -195,14 +195,14 @@ chainnusa/
 │       └── lib/
 │           ├── chains.ts
 │           ├── etherscan.ts
-│           ├── ml-client.ts          # NEW: calls ml-service
-│           └── contracts/            # NEW: ABI + write helpers
-├── ml-service/                       # NEW: Python FastAPI
+│           ├── ml-client.ts          # BARU: memanggil ml-service
+│           └── contracts/            # BARU: ABI + write helpers
+├── ml-service/                       # BARU: Python FastAPI
 │   ├── app/
 │   │   ├── main.py
 │   │   ├── routers/{predict,explain,cluster}.py
 │   │   ├── models/{wallet_clf,anomaly,lstm}.py
-│   │   ├── features/extractor.py
+│   │   └── features/extractor.py
 │   │   └── etl/{extract,transform,load}.py
 │   ├── notebooks/
 │   │   ├── 00_eda.ipynb
@@ -217,10 +217,10 @@ chainnusa/
 │   ├── tests/
 │   ├── pyproject.toml
 │   └── Dockerfile
-├── contracts/                        # NEW: Foundry project
+├── contracts/                        # BARU: Proyek Foundry
 │   ├── src/
-│   │   ├── AnalysisRegistry.sol      # stores CID of analysis result
-│   │   └── ReportSBT.sol             # soulbound NFT report
+│   │   ├── AnalysisRegistry.sol      # menyimpan CID dari hasil analisis
+│   │   └── ReportSBT.sol             # laporan soulbound NFT
 │   ├── test/
 │   ├── script/Deploy.s.sol
 │   └── foundry.toml
@@ -228,7 +228,7 @@ chainnusa/
 │   ├── docker-compose.yml
 │   ├── prometheus.yml
 │   └── grafana/
-├── data/                             # DVC tracked
+├── data/                             # Dilacak DVC
 │   ├── raw/
 │   ├── processed/
 │   └── labels/
@@ -241,67 +241,67 @@ chainnusa/
 │   ├── blockchain-101.md
 │   ├── ml-pipeline.md
 │   └── threat-model.md
-├── package.json                      # workspace root (pnpm)
+├── package.json                      # root workspace (pnpm)
 ├── pnpm-workspace.yaml
 └── README.md
 ```
 
 ---
 
-## 6. Final Tech Stack
+## 6. Tech Stack Akhir
 
-| Layer          | Tech                                                                                           |
-| -------------- | ---------------------------------------------------------------------------------------------- |
+| Lapisan        | Tech                                                                                            |
+| -------------- | ----------------------------------------------------------------------------------------------- |
 | Frontend       | Next.js 14, Tailwind, Recharts, wagmi, viem, RainbowKit                                        |
 | Backend (web)  | Next API Routes, LangChain, Anthropic SDK, Ollama provider                                     |
 | ML Service     | Python 3.11, FastAPI, scikit-learn, XGBoost, PyTorch, statsmodels, prophet, transformers, SHAP |
-| Smart Contract | Solidity 0.8.x, **Foundry**, OpenZeppelin, Slither, Mythril                                    |
-| Database       | PostgreSQL 16 (analytics), SQLite (dev cache)                                                  |
+| Smart Contract | Solidity 0.8.x, **Foundry**, OpenZeppelin, Slither, Mythril                                     |
+| Database       | PostgreSQL 16 (analytics), SQLite (cache development)                                          |
 | Storage        | MinIO/S3 (artifacts), IPFS (Pinata)                                                            |
 | MLOps          | MLflow, DVC, Docker, GitHub Actions, Prometheus, Grafana                                       |
 | Testing        | Vitest (web), Pytest (ml), Forge (contracts), Playwright (e2e)                                 |
 
 ---
 
-## 7. Implementation Roadmap (Milestones)
+## 7. Roadmap Implementasi (Milestones)
 
-| #   | Milestone                                                                                     | Output                                   | Estimate |
-| --- | --------------------------------------------------------------------------------------------- | ---------------------------------------- | -------- |
-| M1  | Restructure → pnpm monorepo (`apps/web` only first)                                           | Green build                              | 0.5 days |
-| M2  | Postgres + ETL pipeline (Etherscan → wallet features)                                         | `wallet_features` table with 1k wallets  | 2 days   |
-| M3  | EDA notebook (`00_eda.ipynb`)                                                                 | Insights + plots                         | 1 day    |
-| M4  | ML service skeleton + `WalletFeatureExtractor` + `/predict` endpoint (dummy)                  | Service running in Docker                | 1 day    |
-| M5  | Supervised classifier (RF + XGBoost) + MLflow tracking + SHAP                                 | Model artifact + API live                | 3 days   |
-| M6  | Unsupervised (KMeans + Isolation Forest)                                                      | `/cluster`, `/anomaly` endpoints         | 2 days   |
-| M7  | Statistics & Econometrics notebooks                                                           | 2 notebooks + report                     | 2 days   |
-| M8  | LSTM tx-sequence anomaly                                                                      | Notebook + endpoint                      | 3 days   |
-| M9  | NLP token-name classifier                                                                     | Notebook + endpoint                      | 2 days   |
-| M10 | Smart contracts `AnalysisRegistry` + `ReportSBT` (Foundry, deploy to Sepolia/Arbitrum Sepolia) | Verified contracts + tests               | 3 days   |
-| M11 | Wallet sign-in (SIWE) + Chainlink price feed integration                                      | Frontend + backend wired                 | 1.5 days |
-| M12 | IPFS pin + CID emit on-chain from analysis results                                             | E2E flow                                 | 1 day    |
-| M13 | CI/CD (3 workflows) + Slither in pipeline                                                     | All green                                | 1 day    |
-| M14 | Monitoring (Prometheus + Grafana) + drift check                                                | Dashboard live                           | 1.5 days |
-| M15 | Docs + threat model + architecture diagram                                                     | Complete `/docs`                         | 1 day    |
+| #   | Milestone                                                                                   | Output                                  | Estimasi |
+| --- | ------------------------------------------------------------------------------------------- | --------------------------------------- | -------- |
+| M1  | Restrukturisasi → pnpm monorepo (`apps/web` dulu)                                           | Green build                             | 0.5 hari |
+| M2  | Postgres + pipeline ETL (Etherscan → fitur wallet)                                          | Tabel `wallet_features` dengan 1k wallet| 2 hari   |
+| M3  | Notebook EDA (`00_eda.ipynb`)                                                              | Insight + plot                          | 1 hari   |
+| M4  | Kerangka ML service + `WalletFeatureExtractor` + endpoint `/predict` (dummy)                | Service berjalan di Docker              | 1 hari   |
+| M5  | Klasifikasi supervised (RF + XGBoost) + tracking MLflow + SHAP                              | Artifact model + API live               | 3 hari   |
+| M6  | Unsupervised (KMeans + Isolation Forest)                                                    | Endpoint `/cluster`, `/anomaly`         | 2 hari   |
+| M7  | Notebook statistik & ekonometrik                                                            | 2 notebook + laporan                    | 2 hari   |
+| M8  | Anomali urutan tx LSTM                                                                      | Notebook + endpoint                     | 3 hari   |
+| M9  | Klasifikasi nama token NLP                                                                  | Notebook + endpoint                     | 2 hari   |
+| M10 | Smart contract `AnalysisRegistry` + `ReportSBT` (Foundry, deploy ke Sepolia/Arbitrum Sepolia)| Kontrak terverifikasi + test            | 3 hari   |
+| M11 | Sign-in wallet (SIWE) + integrasi Chainlink price feed                                      | Frontend + backend terhubung            | 1.5 hari |
+| M12 | Pin IPFS + emisi CID on-chain dari hasil analisis                                           | Alur E2E                                | 1 hari   |
+| M13 | CI/CD (3 workflow) + Slither di pipeline                                                    | Semua hijau                             | 1 hari   |
+| M14 | Monitoring (Prometheus + Grafana) + cek drift                                               | Dashboard live                          | 1.5 hari |
+| M15 | Dokumen + threat model + diagram arsitektur                                                 | `/docs` lengkap                         | 1 hari   |
 
-**Realistic total: ~25 working days** (1 person full-time).
+**Total realistis: ~25 hari kerja** (1 orang full-time).
 
 ---
 
 ## 8. Quality Gates
 
-- **Web**: strict typecheck, clean lint, Playwright e2e (3 happy paths).
-- **ML**: pytest coverage ≥80% on `features/` and `models/`, model F1 ≥ 0.75 on test set, drift threshold defined.
-- **Contracts**: `forge test` 100% pass, Slither no high-severity, ≥90% line coverage, gas snapshot tracked.
-- **Security**: no secrets in repo (gitleaks in CI), dependency audit (npm audit + pip-audit) in CI.
+- **Web**: typecheck ketat, lint bersih, Playwright e2e (3 happy paths).
+- **ML**: cakupan pytest ≥80% pada `features/` dan `models/`, F1 model ≥ 0,75 pada test set, threshold drift terdefinisi.
+- **Contracts**: `forge test` 100% lulus, Slither tanpa severity tinggi, cakupan baris ≥90%, snapshot gas terlacak.
+- **Security**: tidak ada rahasia di repo (gitleaks di CI), audit dependensi (npm audit + pip-audit) di CI.
 
 ---
 
-## 9. Final Mapping to 3 Roadmaps (target after implementation)
+## 9. Pemetaan Akhir ke 3 Roadmaps (target setelah implementasi)
 
-| Roadmap             | Coverage Target | Evidence                                                                                  |
-| ------------------- | --------------- | ----------------------------------------------------------------------------------------- |
-| Blockchain          | **90%**         | Foundry contracts + tests + Slither + Chainlink + IPFS + L2 deploy + dApp                 |
-| Machine Learning    | **80%**         | Math notebook, sklearn, XGBoost, PyTorch LSTM, SHAP, NLP, eval metrics                    |
-| AI & Data Scientist | **85%**         | EDA, statistics, econometrics, MLOps full chain (MLflow + Docker + CI/CD + monitoring)    |
+| Roadmap             | Target Cakupan | Bukti                                                                                               |
+| ------------------- | -------------- | --------------------------------------------------------------------------------------------------- |
+| Blockchain          | **90%**        | Kontrak Foundry + test + Slither + Chainlink + IPFS + deploy L2 + dApp                              |
+| Machine Learning    | **80%**        | Notebook matematika, sklearn, XGBoost, PyTorch LSTM, SHAP, NLP, metrik evaluasi                     |
+| AI & Data Scientist | **85%**        | EDA, statistik, ekonometrik, rantai MLOps penuh (MLflow + Docker + CI/CD + monitoring)              |
 
-The remaining 10–20% (e.g., deep RL, GAN, Substrate non-EVM, advanced econometrics CUPED) are intentionally **out-of-scope** because they are not relevant to the wallet analysis domain — documented in `docs/out-of-scope.md` as academic justification.
+Sisanya 10-20% (misalnya, deep RL, GAN, Substrate non-EVM, ekonometrik lanjutan CUPED) sengaja **di luar cakupan** karena tidak relevan dengan domain analisis wallet — didokumentasikan di `docs/out-of-scope.md` sebagai justifikasi akademis.

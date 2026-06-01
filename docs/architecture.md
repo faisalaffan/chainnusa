@@ -1,6 +1,6 @@
-# ChainNusa — Architecture
+# ChainNusa — Arsitektur
 
-## Components
+## Komponen
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -43,44 +43,44 @@
 └──────────────────┘
 ```
 
-## Service responsibilities
+## Tanggung jawab layanan
 
 | Service | Tech | Responsibility |
 |---|---|---|
-| `apps/web` | Next.js 14, viem, LangChain | UI + API gateway, wallet auth, calls ML svc & contracts |
-| `ml-service` | Python 3.11, FastAPI, sklearn, XGBoost, PyTorch | Feature extraction, classifier, anomaly, LSTM, SHAP |
-| `contracts` | Solidity 0.8, Foundry | On-chain proof of analysis (registry + soulbound NFT) |
+| `apps/web` | Next.js 14, viem, LangChain | UI + API gateway, wallet auth, memanggil ML svc & kontrak |
+| `ml-service` | Python 3.11, FastAPI, sklearn, XGBoost, PyTorch | Ekstraksi fitur, classifier, anomaly, LSTM, SHAP |
+| `contracts` | Solidity 0.8, Foundry | Bukti analisis on-chain (registry + soulbound NFT) |
 | `infra` | Docker Compose | Postgres + MinIO + MLflow + Prometheus + Grafana |
 
-## Data flow: end-to-end wallet analysis
+## Alur data: analisis wallet end-to-end
 
-1. User opens dashboard → connects wallet (SIWE) → submits address + chain.
-2. `apps/web` POSTs `/api/analyze`:
-   - Fetches tx data via Etherscan or RPC adapter.
-   - Aggregates with TS analyzer → core stats.
-   - Calls `ml-service /predict` for classifier + anomaly score + SHAP.
-   - Calls LangChain (Claude or Ollama) for natural language summary.
-3. Result cached in SQLite (per chain+address, TTL 1h).
-4. (Optional) User clicks **"Mint proof"**:
-   - JSON of the analysis pinned to IPFS (Pinata) → returns CID.
-   - `apps/web` calls `AnalysisRegistry.recordAnalysis(address, cid)` → emits event.
-   - Optional: `ReportSBT.mint(user, cid)` → soulbound NFT (transferless, signed by wallet).
+1. User membuka dashboard → menghubungkan wallet (SIWE) → mengirimkan address + chain.
+2. `apps/web` POST ke `/api/analyze`:
+   - Mengambil data tx melalui Etherscan atau RPC adapter.
+   - Mengagregasi dengan TS analyzer → statistik inti.
+   - Memanggil `ml-service /predict` untuk classifier + anomaly score + SHAP.
+   - Memanggil LangChain (Claude atau Ollama) untuk ringkasan bahasa alami.
+3. Hasil di-cache di SQLite (per chain+address, TTL 1 jam).
+4. (Opsional) User klik **"Mint proof"**:
+   - JSON analisis di-pin ke IPFS (Pinata) → mengembalikan CID.
+   - `apps/web` memanggil `AnalysisRegistry.recordAnalysis(address, cid)` → memancarkan event.
+   - Opsional: `ReportSBT.mint(user, cid)` → soulbound NFT (tidak dapat ditransfer, ditandatangani oleh wallet).
 
-## Decision log
+## Catatan keputusan
 
-- **Why monorepo?** 3 distinct languages (TS, Python, Solidity) with shared docs + CI. pnpm workspace for TS, separate dirs for non-TS.
-- **Why Postgres alongside SQLite?** SQLite stays for dev cache (no setup). Postgres is for ML pipeline (feature store, label store, run history) — needed once dataset >100k rows.
-- **Why MinIO not raw S3?** Local-first dev; can be swapped to S3 by env var.
-- **Why MLflow not W&B?** Self-hostable, no signup, fits the "open infra" theme.
-- **Why Foundry not Hardhat?** Faster tests, native fuzzing, Solidity-only test files (no JS context switch).
+- **Mengapa monorepo?** 3 bahasa berbeda (TS, Python, Solidity) dengan docs + CI bersama. pnpm workspace untuk TS, direktori terpisah untuk non-TS.
+- **Mengapa Postgres di samping SQLite?** SQLite tetap untuk cache dev (tanpa setup). Postgres untuk ML pipeline (feature store, label store, run history) — diperlukan setelah dataset >100k baris.
+- **Mengapa MinIO bukan S3 langsung?** Development local-first; dapat ditukar ke S3 melalui env var.
+- **Mengapa MLflow bukan W&B?** Dapat di-host sendiri, tanpa signup, sesuai tema "open infra".
+- **Mengapa Foundry bukan Hardhat?** Test lebih cepat, fuzzing native, file test hanya Solidity (tanpa switch konteks JS).
 
-## Trust boundaries
+## Batas kepercayaan
 
 ```
-[ User Wallet ]──────signed message──────▶[ apps/web /auth ]
-                                                  │
-                                                  ▼
-[ apps/web ]───service token──▶[ ml-service ]   (internal only, not exposed)
+[ User Wallet ]──────pesan ditandatangani──────▶[ apps/web /auth ]
+                                                          │
+                                                          ▼
+[ apps/web ]───service token──▶[ ml-service ]   (internal only, tidak diekspos)
 [ apps/web ]───public RPC─────▶[ chain ]
-[ user wallet ]──tx────▶[ AnalysisRegistry / ReportSBT ]   (gas paid by user)
+[ user wallet ]──tx────▶[ AnalysisRegistry / ReportSBT ]   (gas dibayar user)
 ```
