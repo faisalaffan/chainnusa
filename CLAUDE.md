@@ -18,11 +18,6 @@ pnpm contracts:build         # Forge build (solc 0.8.24)
 pnpm contracts:test          # Forge test -vv
 pnpm contracts:slither       # Slither static analysis
 
-# Smart Contracts — Hardhat
-pnpm contracts:hh-compile    # Hardhat compile
-pnpm contracts:hh-test       # Hardhat test
-pnpm contracts:hh-clean      # Clean Hardhat artifacts
-
 # ML Service
 pnpm ml:dev                  # FastAPI dev server (port 8000)
 pnpm ml:test                 # pytest
@@ -32,7 +27,9 @@ docker compose up -d
 docker compose exec ollama ollama pull qwen2.5:7b
 ```
 
-> Package manager: `pnpm@10`. Node >=20. Python >=3.11 for ml-service. Smart contracts: dual build (Foundry + Hardhat), solc 0.8.24, OpenZeppelin 5.6.1.
+> Package manager: `pnpm@10`. Node >=20. Python >=3.11 for ml-service. Smart contracts: Foundry, solc 0.8.24, OpenZeppelin 5.6.1.
+>
+> **Security**: `docs/internal/` is encrypted via git-crypt. See `docs/GIT_CRYPT.md` for setup.
 
 ## Architecture
 

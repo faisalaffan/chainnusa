@@ -3,12 +3,5 @@ broadcast/
 cache/
 out/
 
-# Hardhat build artifacts
-cache-hardhat/
-artifacts/
-dist/
-node_modules/
-typechain-types/
-
 # Environment
 .env
