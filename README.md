@@ -33,41 +33,41 @@ Input: `wallet address` + `chain` → Output: spending pattern analysis + AI sum
 
 ---
 
-## Tampilan Aplikasi
+## Screenshots
 
-### Halaman Utama
+### Home Page
 <img src="assets/APP_DEMO/00_INTRO.png" alt="ChainNusa Intro" width="800">
 
-Tampilan awal ChainNusa. Input alamat wallet EVM, pilih network, klik **Analisis**.
+Landing page. Enter an EVM wallet address, select a network, click **Analisis** (Analyze).
 
-### Pilih Jaringan
-<img src="assets/APP_DEMO/01_CHOOSE_NETWORK.png" alt="Pilih Network" width="800">
+### Network Selection
+<img src="assets/APP_DEMO/01_CHOOSE_NETWORK.png" alt="Choose Network" width="800">
 
-Dropdown network mendukung **Ethereum (1)**, **BSC (56)**, **Polygon (137)**, dan **Anvil Local Testnet (31337)** untuk development.
+Dropdown supports **Ethereum (1)**, **BSC (56)**, **Polygon (137)**, and **Anvil Local Testnet (31337)** for development.
 
-### Hasil Analisis — Ringkasan & Statistik
-<img src="assets/APP_DEMO/02_RESULT_ANALYSIS.png" alt="Hasil Analisis" width="800">
+### Analysis Results — Summary & Statistics
+<img src="assets/APP_DEMO/02_RESULT_ANALYSIS.png" alt="Analysis Result" width="800">
 
-Setelah analisis selesai, ditampilkan:
-- **Header** — alamat wallet, native balance, chain info
+After analysis completes:
+- **Header** — wallet address, native balance, chain info
 - **Stat Grid** — tx count, native in/out, gas spent, token tx, counterparties, active days
-- **Tombol Mint SBT** — simpan hasil analisis ke blockchain sebagai Soulbound Token
+- **Mint SBT Button** — save analysis result on-chain as a Soulbound Token
 
-### Kategori Transaksi & Aktivitas Harian
-<img src="assets/APP_DEMO/03_RESULT_CATEGORY.png" alt="Kategori & Chart" width="800">
+### Transaction Categories & Daily Activity
+<img src="assets/APP_DEMO/03_RESULT_CATEGORY.png" alt="Categories & Charts" width="800">
 
-Dua panel visualisasi:
-- **Pie Chart** — kategori transaksi (transfer, contract interaction, DEX swap, failed, self)
-- **Bar Chart** — aktivitas harian (tx count per hari, 30 hari terakhir)
+Two visualization panels:
+- **Pie Chart** — transaction categories (transfer, contract interaction, DEX swap, failed, self)
+- **Bar Chart** — daily activity (tx count per day, last 30 days)
 
-### Ringkasan AI
+### AI Summary
 <img src="assets/APP_DEMO/04_AI_SUMMARY.png" alt="AI Summary" width="800">
 
-LLM (DeepSeek / Claude / Ollama) menghasilkan analisis naratif dalam format Markdown:
-- **Summary** — gambaran umum wallet
-- **Activity Patterns** — pola transaksi & spending
-- **Tokens & Counterparties** — token & kontrak yang sering berinteraksi
-- **Behavioral Indicators** — klasifikasi probabilistik (trader / hodler / DeFi user / casual)
+LLM (DeepSeek / Claude / Ollama) generates a narrative analysis in Markdown format:
+- **Summary** — wallet overview
+- **Activity Patterns** — spending & transaction patterns
+- **Tokens & Counterparties** — frequently used tokens and contracts
+- **Behavioral Indicators** — probabilistic classification (trader / hodler / DeFi user / casual)
 
 ---
 
