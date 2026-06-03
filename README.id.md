@@ -8,6 +8,11 @@
   <img src="assets/03_LOGO_DARK.png" alt="ChainNusa Logo" width="120">
 </p>
 
+<p align="center">
+  <a href="README.md">🇬🇧 English</a> &nbsp;|&nbsp;
+  <a href="README.id.md">🇮🇩 Bahasa Indonesia</a>
+</p>
+
 # ChainNusa — Crypto Wallet Analyzer
 
 > Platform intelijen on-chain untuk Asia Tenggara.
