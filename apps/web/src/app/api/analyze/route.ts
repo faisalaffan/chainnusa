@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
   if (!isSupportedChain(chainId)) {
     return NextResponse.json(
-      { ok: false, error: `Unsupported chainId. Supported: 1, 56, 137` },
+      { ok: false, error: `Unsupported chainId. Supported: 1, 56, 137, 31337` },
       { status: 400 }
     );
   }

@@ -9,7 +9,7 @@ import {
   type Hex,
   type PublicClient,
 } from "viem";
-import { mainnet, bsc, polygon } from "viem/chains";
+import { mainnet, bsc, polygon, anvil } from "viem/chains";
 import type { ChainId } from "@/lib/chains";
 import type {
   DataProvider,
@@ -40,7 +40,7 @@ const ERC20_META_ABI = parseAbi([
 ]);
 
 interface ChainRpcConfig {
-  chain: typeof mainnet | typeof bsc | typeof polygon;
+  chain: typeof mainnet | typeof bsc | typeof polygon | typeof anvil;
   defaults: string[];
 }
 
@@ -68,6 +68,10 @@ const CHAIN_CFG: Record<ChainId, ChainRpcConfig> = {
       "https://polygon.llamarpc.com",
       "https://polygon.drpc.org",
     ],
+  },
+  31337: {
+    chain: anvil,
+    defaults: ["http://127.0.0.1:8545"],
   },
 };
 
@@ -168,6 +172,41 @@ interface TokenMeta {
   decimals: number;
 }
 
+interface MulticallResult {
+  status: "success" | "failure";
+  result?: unknown;
+}
+
+async function multicallOrFallback(
+  client: PublicClient,
+  contracts: Address[]
+): Promise<MulticallResult[]> {
+  const calls = contracts.flatMap((addr) => [
+    { address: addr, abi: ERC20_META_ABI, functionName: "name" as const },
+    { address: addr, abi: ERC20_META_ABI, functionName: "symbol" as const },
+    { address: addr, abi: ERC20_META_ABI, functionName: "decimals" as const },
+  ]);
+
+  try {
+    return (await client.multicall({
+      contracts: calls,
+      allowFailure: true,
+    })) as MulticallResult[];
+  } catch {
+    // multicall3 not deployed — fall back to individual reads
+    const results: MulticallResult[] = [];
+    for (const call of calls) {
+      try {
+        const result = await client.readContract(call);
+        results.push({ status: "success", result });
+      } catch {
+        results.push({ status: "failure" });
+      }
+    }
+    return results;
+  }
+}
+
 async function fetchTokenMetaBatch(
   client: PublicClient,
   contracts: Address[]
@@ -175,14 +214,8 @@ async function fetchTokenMetaBatch(
   const out = new Map<string, TokenMeta>();
   if (contracts.length === 0) return out;
 
-  // Use multicall (viem auto-detects support; falls back to individual calls).
-  const calls = contracts.flatMap((addr) => [
-    { address: addr, abi: ERC20_META_ABI, functionName: "name" as const },
-    { address: addr, abi: ERC20_META_ABI, functionName: "symbol" as const },
-    { address: addr, abi: ERC20_META_ABI, functionName: "decimals" as const },
-  ]);
-
-  const results = await client.multicall({ contracts: calls, allowFailure: true });
+  // Try multicall first; fall back to individual reads if multicall3 not deployed
+  const results = await multicallOrFallback(client, contracts);
 
   for (let i = 0; i < contracts.length; i++) {
     const nameRes = results[i * 3];

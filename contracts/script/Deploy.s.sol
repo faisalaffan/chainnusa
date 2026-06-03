@@ -13,7 +13,11 @@ import {ReportSBT} from "../src/ReportSBT.sol";
  */
 contract Deploy is Script {
     function run() external {
-        uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
+        uint256 deployerKey = vm.envOr("DEPLOYER_PRIVATE_KEY", uint256(0));
+        if (deployerKey == 0) {
+            deployerKey = vm.envOr("PRIVATE_KEY", uint256(0));
+        }
+        require(deployerKey != 0, "Set DEPLOYER_PRIVATE_KEY or PRIVATE_KEY env var, or pass --private-key via forge");
         address deployer = vm.addr(deployerKey);
 
         vm.startBroadcast(deployerKey);

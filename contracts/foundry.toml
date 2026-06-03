@@ -7,10 +7,12 @@ script = "script"
 solc = "0.8.24"
 evm_version = "cancun"
 ffi = false
-fuzz_runs = 500
 optimizer = true
 optimizer_runs = 200
 gas_reports = ["*"]
+
+[fuzz]
+runs = 500
 
 [rpc_endpoints]
 sepolia = "${SEPOLIA_RPC_URL}"

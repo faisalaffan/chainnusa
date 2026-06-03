@@ -1,6 +1,6 @@
 import type { AnalysisResult } from "@/lib/analyzer";
 
-export type LlmProviderId = "claude" | "ollama";
+export type LlmProviderId = "claude" | "ollama" | "deepseek";
 
 export interface LlmProviderInfo {
   id: LlmProviderId;

@@ -21,6 +21,7 @@ import {
   Cpu,
   Cloud,
   HardDrive,
+  Award,
 } from "lucide-react";
 import { CHAINS, SUPPORTED_CHAIN_IDS, type ChainId } from "@/lib/chains";
 import type { AnalysisResult } from "@/lib/analyzer";
@@ -67,6 +68,14 @@ export default function Analyzer() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ApiResponse | null>(null);
+  const [minting, setMinting] = useState(false);
+  const [mintResult, setMintResult] = useState<{
+    analysisId: string;
+    sbtTokenId: string;
+    registryTxHash: string;
+    sbtTxHash: string;
+  } | null>(null);
+  const [mintError, setMintError] = useState<string | null>(null);
 
   async function run(force = false) {
     setError(null);
@@ -88,6 +97,46 @@ export default function Analyzer() {
       setError(e instanceof Error ? e.message : "Network error");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function mintSbt() {
+    if (!result?.analysis) return;
+    setMinting(true);
+    setMintError(null);
+    setMintResult(null);
+    try {
+      const res = await fetch("/api/record-analysis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          address: address.trim(),
+          chainId,
+          analysis: result.analysis,
+        }),
+      });
+      const json = (await res.json()) as {
+        ok: boolean;
+        error?: string;
+        analysisId?: string;
+        sbtTokenId?: string;
+        registryTxHash?: string;
+        sbtTxHash?: string;
+      };
+      if (!res.ok || !json.ok) {
+        setMintError(json.error || `Mint failed with ${res.status}`);
+      } else {
+        setMintResult({
+          analysisId: json.analysisId!,
+          sbtTokenId: json.sbtTokenId!,
+          registryTxHash: json.registryTxHash!,
+          sbtTxHash: json.sbtTxHash!,
+        });
+      }
+    } catch (e) {
+      setMintError(e instanceof Error ? e.message : "Network error");
+    } finally {
+      setMinting(false);
     }
   }
 
@@ -131,7 +180,14 @@ export default function Analyzer() {
       )}
 
       {result && analysis && (
-        <ResultPanel result={result} analysis={analysis} />
+        <ResultPanel
+          result={result}
+          analysis={analysis}
+          minting={minting}
+          mintResult={mintResult}
+          mintError={mintError}
+          onMint={() => mintSbt()}
+        />
       )}
     </div>
   );
@@ -229,7 +285,21 @@ function FormCard(props: {
   );
 }
 
-function ResultPanel({ result, analysis }: { result: ApiResponse; analysis: AnalysisResult }) {
+function ResultPanel({
+  result,
+  analysis,
+  minting,
+  mintResult,
+  mintError,
+  onMint,
+}: {
+  result: ApiResponse;
+  analysis: AnalysisResult;
+  minting: boolean;
+  mintResult: { analysisId: string; sbtTokenId: string; registryTxHash: string; sbtTxHash: string } | null;
+  mintError: string | null;
+  onMint: () => void;
+}) {
   const chain = CHAINS[analysis.chainId as ChainId];
   return (
     <div className="space-y-6">
@@ -272,6 +342,80 @@ function ResultPanel({ result, analysis }: { result: ApiResponse; analysis: Anal
       <Panel title="Recent Transactions" icon={<Clock className="w-4 h-4" />}>
         <TxTable analysis={analysis} explorerUrl={chain.explorerUrl} />
       </Panel>
+
+      {/* SBT Minting */}
+      <div className="glass rounded-2xl p-5 border border-brand-500/20">
+        <div className="flex items-center gap-2 mb-3">
+          <Award className="w-5 h-5 text-brand-500" />
+          <h3 className="text-lg font-semibold">Simpan ke Blockchain</h3>
+        </div>
+
+        {!mintResult && (
+          <>
+            <p className="text-sm text-white/60 mb-3">
+              Mint analisis ini sebagai Soulbound Token (SBT) on-chain. Hasil akan tersimpan permanen
+              di contract AnalysisRegistry + ReportSBT dan terikat ke alamat wallet ini.
+            </p>
+            <button
+              onClick={onMint}
+              disabled={minting}
+              className="bg-brand-600 hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2"
+            >
+              {minting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Minting…
+                </>
+              ) : (
+                <>
+                  <Award className="w-4 h-4" />
+                  Mint SBT
+                </>
+              )}
+            </button>
+          </>
+        )}
+
+        {mintError && (
+          <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm text-red-300 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            {mintError}
+          </div>
+        )}
+
+        {mintResult && (
+          <div className="space-y-3">
+            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-sm text-emerald-300 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              SBT berhasil di-mint!
+            </div>
+            <div className="grid md:grid-cols-2 gap-2 text-sm">
+              <div className="bg-white/5 rounded-lg p-3">
+                <div className="text-white/50 text-xs">Token ID</div>
+                <div className="mono font-medium">{mintResult.sbtTokenId}</div>
+              </div>
+              <div className="bg-white/5 rounded-lg p-3">
+                <div className="text-white/50 text-xs">Analysis ID</div>
+                <div className="mono text-xs truncate" title={mintResult.analysisId}>
+                  {mintResult.analysisId}
+                </div>
+              </div>
+              <div className="bg-white/5 rounded-lg p-3">
+                <div className="text-white/50 text-xs">Registry Tx</div>
+                <div className="mono text-xs truncate" title={mintResult.registryTxHash}>
+                  {mintResult.registryTxHash}
+                </div>
+              </div>
+              <div className="bg-white/5 rounded-lg p-3">
+                <div className="text-white/50 text-xs">SBT Tx</div>
+                <div className="mono text-xs truncate" title={mintResult.sbtTxHash}>
+                  {mintResult.sbtTxHash}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

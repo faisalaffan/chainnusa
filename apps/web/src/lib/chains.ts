@@ -1,4 +1,4 @@
-export type ChainId = 1 | 56 | 137;
+export type ChainId = 1 | 56 | 137 | 31337;
 
 export interface ChainConfig {
   id: ChainId;
@@ -38,9 +38,18 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     explorerUrl: "https://polygonscan.com",
     color: "#8247E5",
   },
+  31337: {
+    id: 31337,
+    name: "Anvil Local Testnet",
+    shortName: "Anvil",
+    nativeSymbol: "ETH",
+    nativeDecimals: 18,
+    explorerUrl: "",
+    color: "#A855F7",
+  },
 };
 
-export const SUPPORTED_CHAIN_IDS: ChainId[] = [1, 56, 137];
+export const SUPPORTED_CHAIN_IDS: ChainId[] = [1, 56, 137, 31337];
 
 export function getChain(chainId: number): ChainConfig {
   const cfg = CHAINS[chainId as ChainId];
