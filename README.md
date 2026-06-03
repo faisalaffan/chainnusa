@@ -11,7 +11,7 @@
 # ChainNusa — Crypto Wallet Analyzer
 
 > On-chain intelligence platform for Southeast Asia.
-> Multi-chain wallet analyzer with AI summary. Powered by **Etherscan V2 + Claude (Anthropic)**.
+> Multi-chain wallet analyzer with AI summary. Powered by **Etherscan V2 / JSON-RPC + Claude / DeepSeek / Ollama**.
 
 Input: `wallet address` + `chain` → Output: spending pattern analysis + AI summary in natural language.
 
@@ -21,8 +21,8 @@ Input: `wallet address` + `chain` → Output: spending pattern analysis + AI sum
 
 - **Pluggable providers (adapter pattern)** — swap data source & LLM via env, no code changes:
   - Data: **Etherscan V2** (hosted, full history) ↔ **Direct JSON-RPC** (self-hosted via viem, ERC-20 only)
-  - LLM: **Claude** (hosted, via LangChain) ↔ **Ollama** (local, via LangChain)
-- **Multi-chain** — Ethereum, BSC, Polygon (via Etherscan V2 multichain or viem chains).
+  - LLM: **Claude** (hosted) ↔ **DeepSeek** (hosted) ↔ **Ollama** (local) — all via LangChain
+- **Multi-chain** — Ethereum, BSC, Polygon, Anvil Local Testnet (via Etherscan V2 multichain or direct JSON-RPC).
 - **Data pipeline**:
   - Fetch native balance + last 500 tx + last 500 ERC-20 transfers (parallel).
   - Heuristic categorization: transfer / contract / DEX swap (methodId) / failed / self.
@@ -30,6 +30,44 @@ Input: `wallet address` + `chain` → Output: spending pattern analysis + AI sum
 - **LLM orchestration via LangChain** (`ChatPromptTemplate` + `RunnableSequence` + `StringOutputParser`) — anti-hallucination system prompt, structured output.
 - **SQLite caching** — previously scanned wallets served from cache (TTL 1 hour, configurable). Force-refresh button in UI.
 - **UI** — Next.js 14 + Tailwind + Recharts + Lucide. Dark theme, responsive, real-time provider badge.
+
+---
+
+## Tampilan Aplikasi
+
+### Halaman Utama
+<img src="assets/APP_DEMO/00_INTRO.png" alt="ChainNusa Intro" width="800">
+
+Tampilan awal ChainNusa. Input alamat wallet EVM, pilih network, klik **Analisis**.
+
+### Pilih Jaringan
+<img src="assets/APP_DEMO/01_CHOOSE_NETWORK.png" alt="Pilih Network" width="800">
+
+Dropdown network mendukung **Ethereum (1)**, **BSC (56)**, **Polygon (137)**, dan **Anvil Local Testnet (31337)** untuk development.
+
+### Hasil Analisis — Ringkasan & Statistik
+<img src="assets/APP_DEMO/02_RESULT_ANALYSIS.png" alt="Hasil Analisis" width="800">
+
+Setelah analisis selesai, ditampilkan:
+- **Header** — alamat wallet, native balance, chain info
+- **Stat Grid** — tx count, native in/out, gas spent, token tx, counterparties, active days
+- **Tombol Mint SBT** — simpan hasil analisis ke blockchain sebagai Soulbound Token
+
+### Kategori Transaksi & Aktivitas Harian
+<img src="assets/APP_DEMO/03_RESULT_CATEGORY.png" alt="Kategori & Chart" width="800">
+
+Dua panel visualisasi:
+- **Pie Chart** — kategori transaksi (transfer, contract interaction, DEX swap, failed, self)
+- **Bar Chart** — aktivitas harian (tx count per hari, 30 hari terakhir)
+
+### Ringkasan AI
+<img src="assets/APP_DEMO/04_AI_SUMMARY.png" alt="AI Summary" width="800">
+
+LLM (DeepSeek / Claude / Ollama) menghasilkan analisis naratif dalam format Markdown:
+- **Summary** — gambaran umum wallet
+- **Activity Patterns** — pola transaksi & spending
+- **Tokens & Counterparties** — token & kontrak yang sering berinteraksi
+- **Behavioral Indicators** — klasifikasi probabilistik (trader / hodler / DeFi user / casual)
 
 ---
 
@@ -45,12 +83,13 @@ Frontend      → Next.js 14 App Router + Tailwind + Recharts
 
 ### Provider matrix
 
-| Mode                  | Data         | LLM    | API key needed        | Privacy              |
-| --------------------- | ------------ | ------ | --------------------- | -------------------- |
-| **Hosted** (default)  | Etherscan V2 | Claude | Etherscan + Anthropic | Third-party data     |
-| **Hybrid A**          | Etherscan V2 | Ollama | Etherscan only        | Local LLM            |
-| **Hybrid B**          | RPC          | Claude | Anthropic only        | Data via RPC         |
-| **Fully self-hosted** | RPC          | Ollama | _none_                | 100% local           |
+| Mode                  | Data         | LLM      | API key needed        | Privacy              |
+| --------------------- | ------------ | -------- | --------------------- | -------------------- |
+| **Hosted** (default)  | Etherscan V2 | Claude   | Etherscan + Anthropic | Third-party data     |
+| **DeepSeek**          | Etherscan V2 | DeepSeek | Etherscan + DeepSeek  | Third-party data     |
+| **Hybrid A**          | Etherscan V2 | Ollama   | Etherscan only        | Local LLM            |
+| **Hybrid B**          | RPC          | Claude   | Anthropic only        | Data via RPC         |
+| **Fully self-hosted** | RPC          | Ollama   | _none_                | 100% local           |
 
 ---
 
@@ -83,6 +122,12 @@ DATA_PROVIDER=etherscan
 LLM_PROVIDER=claude
 ETHERSCAN_API_KEY=...
 ANTHROPIC_API_KEY=...
+
+# or DeepSeek
+DATA_PROVIDER=etherscan
+LLM_PROVIDER=deepseek
+DEEPSEEK_API_KEY=sk-...
+DEEPSEEK_MODEL=deepseek-chat
 
 # or Fully self-hosted
 DATA_PROVIDER=rpc
@@ -160,7 +205,7 @@ Request:
 }
 ```
 
-`chainId`: `1` (Ethereum), `56` (BSC), `137` (Polygon).
+`chainId`: `1` (Ethereum), `56` (BSC), `137` (Polygon), `31337` (Anvil Local Testnet).
 
 Response (200):
 
